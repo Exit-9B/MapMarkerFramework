@@ -1,0 +1,14 @@
+{
+  "name": "mapmarkerframework",
+  "version-string": "1.0.0",
+  "description": "Enables mods to override map marker icons",
+  "homepage": "https://github.com/Exit-9B/MapMarkerFramework",
+  "license": "MIT",
+  "dependencies": [
+    "boost-atomic",
+    "boost-stl-interfaces",
+    "span-lite",
+    "spdlog",
+    "jsoncpp"
+  ]
+}
