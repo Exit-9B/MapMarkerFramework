@@ -9,6 +9,7 @@
     "boost-stl-interfaces",
     "span-lite",
     "spdlog",
+    "xbyak",
     "jsoncpp"
   ]
 }

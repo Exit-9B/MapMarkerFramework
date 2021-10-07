@@ -1,7 +1,9 @@
 set(SOURCES ${SOURCES}
-    src/main.cpp
-    src/PCH.cpp
-
-    src/MapMarkerUtil.cpp
     src/FormUtil.cpp
+    src/FormUtil.h
+    src/MapMarkerManager.cpp
+    src/MapMarkerManager.h
+    src/PCH.cpp
+    src/PCH.h
+    src/main.cpp
 )

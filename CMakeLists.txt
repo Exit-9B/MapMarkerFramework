@@ -32,7 +32,7 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STR
 
 project(
 	MapMarkerFramework
-	VERSION 1.0.0
+	VERSION 1.1.0
 	LANGUAGES CXX
 )
 
@@ -76,24 +76,24 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_DEBUG OFF)
 
 set(Boost_USE_STATIC_LIBS ON)
 
+add_compile_definitions(SKSE_SUPPORT_XBYAK)
 
 # ---- Dependencies ----
 
 add_subdirectory("extern/CommonLibSSE" CommonLibSSE)
 
 find_package(spdlog REQUIRED CONFIG)
+find_package(xbyak REQUIRED)
 find_package(jsoncpp REQUIRED)
 
 # ---- Add source files ----
 
-include (cmake/headerlist.cmake)
 include (cmake/sourcelist.cmake)
 
 source_group(
 	TREE
 		${CMAKE_CURRENT_SOURCE_DIR}
 	FILES
-		${HEADERS}
 		${SOURCES}
 )
 
@@ -109,7 +109,6 @@ source_group(
 add_library(
 	${PROJECT_NAME}
 	SHARED
-	${HEADERS}
 	${SOURCES}
 	${CMAKE_CURRENT_BINARY_DIR}/include/Version.h
 	${CMAKE_CURRENT_BINARY_DIR}/version.rc
