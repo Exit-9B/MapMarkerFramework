@@ -11,10 +11,10 @@ public:
 	void LoadMapMarkersFromFile(std::filesystem::path a_file);
 	auto GetDiscoveryMusic(RE::MARKER_TYPE a_type) -> const char*;
 
-	inline static std::string DiscoveryMusicGeneric{ "MUSDiscoveryGeneric"s };
-	inline static std::string DiscoveryMusicCity{ "MUSDiscoveryCity"s };
-	inline static std::string DiscoveryMusicTown{ "MUSDiscoveryTown"s };
-	inline static std::string DiscoveryMusicDungeon{ "MUSDiscoveryDungeon"s };
+	inline static RE::BSFixedString DiscoveryMusicGeneric{ "MUSDiscoveryGeneric"sv };
+	inline static RE::BSFixedString DiscoveryMusicCity{ "MUSDiscoveryCity"sv };
+	inline static RE::BSFixedString DiscoveryMusicTown{ "MUSDiscoveryTown"sv };
+	inline static RE::BSFixedString DiscoveryMusicDungeon{ "MUSDiscoveryDungeon"sv };
 
 private:
 	MapMarkerManager() = default;
@@ -25,7 +25,7 @@ private:
 		RE::BSFixedString* a_musicType,
 		RE::MARKER_TYPE a_markerType) -> RE::BSFixedString*;
 
-	std::unordered_map<RE::MARKER_TYPE, std::string> _discoveryMusic{
+	std::unordered_map<RE::MARKER_TYPE, RE::BSFixedString> _discoveryMusic{
 		{ RE::MARKER_TYPE::kCity, DiscoveryMusicCity },
 		{ RE::MARKER_TYPE::kTown, DiscoveryMusicTown },
 		{ RE::MARKER_TYPE::kCave, DiscoveryMusicDungeon },

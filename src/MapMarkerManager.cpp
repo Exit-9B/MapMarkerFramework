@@ -88,6 +88,11 @@ void MapMarkerManager::LoadMapMarkersFromFile(std::filesystem::path a_file)
 			}
 
 			auto markerType = static_cast<RE::MARKER_TYPE>(index.asUInt());
+
+			if (GetDiscoveryMusic(markerType) == discoveryMusic.asString()) {
+				continue;
+			}
+
 			_discoveryMusic[markerType] = discoveryMusic.asString();
 		}
 	}
