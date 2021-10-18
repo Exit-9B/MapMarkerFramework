@@ -1,4 +1,5 @@
-#include "MapMarkerManager.h"
+#include "Hooks.h"
+#include "MapConfigLoader.h"
 
 extern "C" DLLEXPORT bool SKSEAPI
 	SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
@@ -55,14 +56,15 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 
 	SKSE::Init(a_skse);
 
-	MapMarkerManager::GetSingleton()->InstallHooks();
+	Hooks::Install();
 
 	auto messaging = SKSE::GetMessagingInterface();
 	messaging->RegisterListener([](SKSE::MessagingInterface::Message* a_msg)
 		{
 			switch (a_msg->type) {
 			case SKSE::MessagingInterface::kDataLoaded:
-				MapMarkerManager::GetSingleton()->LoadAllMapMarkers();
+				MapConfigLoader loader{};
+				loader.LoadAll();
 			}
 		});
 
