@@ -15,6 +15,7 @@ protected:
 	// Stack operations
 
 	void Push(const std::string& a_value, bool a_useConstantPool = true);
+	void Push(float a_value);
 	void Push(double a_value);
 
 	// Math actions

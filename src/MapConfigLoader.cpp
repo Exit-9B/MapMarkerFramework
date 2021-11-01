@@ -58,7 +58,7 @@ void MapConfigLoader::LoadFromFile(std::filesystem::path a_file)
 			auto name = iconDef["name"].asString();
 			auto& source = iconDef["source"];
 
-			auto scale = iconDef["scale"].asDouble();
+			auto scale = iconDef["scale"].asFloat();
 			if (!scale) {
 				scale = 1.0;
 			}

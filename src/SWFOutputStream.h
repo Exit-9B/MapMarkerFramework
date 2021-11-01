@@ -17,6 +17,7 @@ public:
 	void WriteUI32(std::uint32_t a_value);
 	void WriteFIXED(float a_value);
 	void WriteFIXED8(float a_value);
+	void WriteFLOAT(float a_value);
 	void WriteDOUBLE(double a_value);
 	void WriteMATRIX(const RE::GMatrix2D& a_value);
 	void WriteCXFORMWITHALPHA(const RE::GRenderer::Cxform& a_value);

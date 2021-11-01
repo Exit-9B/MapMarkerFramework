@@ -68,6 +68,19 @@ void SWFOutputStream::WriteFIXED8(float a_value)
 	WriteUI16(static_cast<std::uint16_t>(a_value * (1 << 8)));
 }
 
+void SWFOutputStream::WriteFLOAT(float a_value)
+{
+	union FloatConverter
+	{
+		float value;
+		char bytes[sizeof(double)];
+	};
+
+	FloatConverter cv{ .value = a_value };
+
+	Write(std::string_view(std::addressof(cv.bytes[0]), 4));
+}
+
 void SWFOutputStream::WriteDOUBLE(double a_value)
 {
 	union DoubleConverter

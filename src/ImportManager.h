@@ -17,7 +17,7 @@ public:
 		std::filesystem::path a_source,
 		const std::string& a_exportName,
 		const std::string& a_exportNameUndiscovered,
-		double a_iconScale);
+		float a_iconScale);
 
 	void LoadIcons();
 
@@ -47,7 +47,7 @@ private:
 		std::string SourcePath;
 		std::string ExportName;
 		std::string ExportNameUndiscovered;
-		double IconScale;
+		float IconScale;
 	};
 
 	ImportManager() = default;
@@ -71,7 +71,7 @@ private:
 		RE::GFxMovieDefImpl* a_movieDef,
 		const std::unordered_map<std::string, std::uint32_t>& a_movieIndices,
 		std::vector<std::uint16_t> a_ids[],
-		std::vector<double>& a_iconScales);
+		std::vector<float>& a_iconScales);
 
 	static auto MakeReplaceObject(
 		AllocateCallback a_alloc,
@@ -79,7 +79,7 @@ private:
 
 	static auto MakeMarkerScaleAction(
 		AllocateCallback a_alloc,
-		double a_iconScale) -> RE::GASDoAction*;
+		float a_iconScale) -> RE::GASDoAction*;
 
 	static auto MakeTagList(
 		AllocateCallback a_alloc,

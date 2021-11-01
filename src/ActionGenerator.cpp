@@ -91,6 +91,14 @@ void ActionGenerator::Push(const std::string& a_value, bool a_useConstantPool)
 
 // Stack operations
 
+void ActionGenerator::Push(float a_value)
+{
+	_temporary.WriteUI8(0x96);
+	_temporary.WriteUI16(5);
+	_temporary.WriteUI8(1);
+	_temporary.WriteFLOAT(a_value);
+}
+
 void ActionGenerator::Push(double a_value)
 {
 	_temporary.WriteUI8(0x96);

@@ -15,7 +15,7 @@ void ImportManager::AddCustomIcon(
 	std::filesystem::path a_source,
 	const std::string& a_exportName,
 	const std::string& a_exportNameUndiscovered,
-	double a_iconScale)
+	float a_iconScale)
 {
 	auto path = std::filesystem::path{ "Data\\MapMarkers"sv } / a_source;
 	auto pathStr = path.string();
@@ -250,7 +250,7 @@ void ImportManager::InsertCustomIcons(
 	ImportMovies(a_movieDef, movieIndices);
 
 	std::vector<std::uint16_t> ids[IconTypes::Total];
-	std::vector<double> iconScales;
+	std::vector<float> iconScales;
 	ImportResources(a_movieDef, movieIndices, ids, iconScales);
 
 	using PlaceFlags = RE::GFxPlaceObject2::PlaceFlags;
@@ -319,7 +319,7 @@ void ImportManager::ImportResources(
 	RE::GFxMovieDefImpl* a_movieDef,
 	const std::unordered_map<std::string, std::uint32_t>& a_movieIndices,
 	std::vector<std::uint16_t> a_ids[],
-	std::vector<double>& a_iconScales)
+	std::vector<float>& a_iconScales)
 {
 	using ImportedResource = RE::GFxMovieDefImpl::ImportedResource;
 
@@ -429,12 +429,12 @@ auto ImportManager::MakeReplaceObject(AllocateCallback a_alloc, std::uint16_t a_
 	return TagFactory::MakePlaceObject(a_alloc, placeObjectData);
 }
 
-auto ImportManager::MakeMarkerScaleAction(AllocateCallback a_alloc, double a_iconScale)
+auto ImportManager::MakeMarkerScaleAction(AllocateCallback a_alloc, float a_iconScale)
 	-> RE::GASDoAction*
 {
 	struct Action : ActionGenerator
 	{
-		Action(double a_iconScale)
+		Action(float a_iconScale)
 		{
 			// var marker = this._parent._parent._parent;
 			Push("marker");
