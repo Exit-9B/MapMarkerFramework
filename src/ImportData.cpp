@@ -61,15 +61,23 @@ void ImportData::LoadIcons(const std::vector<IconInfo>& a_iconInfo)
 
 		auto scaleformManager = RE::BSScaleformManager::GetSingleton();
 		auto loader = scaleformManager->loader;
-		auto movie = static_cast<RE::GFxMovieDefImpl*>(loader->CreateMovie(iconInfo.SourcePath.data()));
-		if (!movie) {
+		auto movieDef = loader->CreateMovie(iconInfo.SourcePath.data());
+		if (!movieDef) {
 			continue;
 		}
 
-		_importedMovies[iconInfo.SourcePath] = movie;
+		static REL::Relocation<std::uintptr_t> GFxMovieDefImpl_vtbl{ REL::ID(562342), 0x4BF0 };
+		if (*reinterpret_cast<std::uintptr_t*>(movieDef) != GFxMovieDefImpl_vtbl.get()) {
+			logger::critical("Loaded movie did not have the expected virtual table, aborting"sv);
+			return;
+		}
 
-		auto discoveredIcon = movie->GetResource(iconInfo.ExportName.data());
-		auto undiscoveredIcon = movie->GetResource(iconInfo.ExportNameUndiscovered.data());
+		auto movieDefImpl = static_cast<RE::GFxMovieDefImpl*>(movieDef);
+
+		_importedMovies[iconInfo.SourcePath] = movieDefImpl;
+
+		auto discoveredIcon = movieDef->GetResource(iconInfo.ExportName.data());
+		auto undiscoveredIcon = movieDef->GetResource(iconInfo.ExportNameUndiscovered.data());
 
 		if (discoveredIcon && discoveredIcon->GetResourceType() == ResourceType::kSpriteDef) {
 			_icons[IconTypes::Discovered][i] = static_cast<RE::GFxSpriteDef*>(discoveredIcon);
