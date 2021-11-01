@@ -1,4 +1,5 @@
 #pragma once
+#include <unordered_set>
 
 class ImportManager
 {
@@ -19,7 +20,9 @@ public:
 		const std::string& a_exportNameUndiscovered,
 		float a_iconScale);
 
-	void LoadIcons();
+	void LoadIcons(
+		std::unordered_map<std::string, RE::GFxMovieDefImpl*>& a_movies,
+		std::vector<RE::GFxSpriteDef*> a_icons[]);
 
 private:
 	using AllocateCallback = std::function<void*(std::size_t)>;
@@ -65,11 +68,14 @@ private:
 
 	void ImportMovies(
 		RE::GFxMovieDefImpl* a_movieDef,
+		const std::unordered_map<std::string, RE::GFxMovieDefImpl*>& a_movies,
 		std::unordered_map<std::string, std::uint32_t>& a_movieIndices);
 
 	void ImportResources(
 		RE::GFxMovieDefImpl* a_movieDef,
+		const std::unordered_map<std::string, RE::GFxMovieDefImpl*>& a_movies,
 		const std::unordered_map<std::string, std::uint32_t>& a_movieIndices,
+		const std::vector<RE::GFxSpriteDef*> a_icons[],
 		std::vector<std::uint16_t> a_ids[],
 		std::vector<float>& a_iconScales);
 
@@ -95,11 +101,8 @@ private:
 
 	std::vector<IconInfo> _customIcons;
 
-	std::unordered_map<std::string, RE::GFxMovieDefImpl*> _importedMovies;
-	std::vector<RE::GFxSpriteDef*> _icons[IconTypes::Total];
+	std::unordered_set<std::string> _importedMovies;
 	std::uint32_t _baseIndex = 0;
-
-	RE::GFxLoader* _loader;
 
 	inline static REL::Relocation<decltype(LoadMovie)> _LoadMovie;
 };

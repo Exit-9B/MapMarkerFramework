@@ -21,37 +21,39 @@ void ImportManager::AddCustomIcon(
 	auto pathStr = path.string();
 
 	_customIcons.push_back({ pathStr, a_exportName, a_exportNameUndiscovered, a_iconScale });
-
-	auto scaleformManager = RE::BSScaleformManager::GetSingleton();
-	auto loader = scaleformManager->loader;
-	if (!_importedMovies.contains(pathStr)) {
-		auto movieDef = loader->CreateMovie(pathStr.c_str());
-
-		_importedMovies[pathStr] = static_cast<RE::GFxMovieDefImpl*>(movieDef);
-	}
+	_importedMovies.insert(pathStr);
 }
 
-void ImportManager::LoadIcons()
+void ImportManager::LoadIcons(
+	std::unordered_map<std::string, RE::GFxMovieDefImpl*>& a_movies,
+	std::vector<RE::GFxSpriteDef*> a_icons[])
 {
 	using ResourceType = RE::GFxResource::ResourceType;
 
-	_icons[IconTypes::Discovered].resize(_customIcons.size());
-	_icons[IconTypes::Undiscovered].resize(_customIcons.size());
+	a_icons[IconTypes::Discovered].resize(_customIcons.size());
+	a_icons[IconTypes::Undiscovered].resize(_customIcons.size());
 
 	for (std::size_t i = 0, size = _customIcons.size(); i < size; i++) {
 		auto& iconInfo = _customIcons[i];
-		auto& movie = _importedMovies[iconInfo.SourcePath];
-		assert(movie);
+
+		auto scaleformManager = RE::BSScaleformManager::GetSingleton();
+		auto loader = scaleformManager->loader;
+		auto movie = static_cast<RE::GFxMovieDefImpl*>(loader->CreateMovie(iconInfo.SourcePath.data()));
+		if (!movie) {
+			continue;
+		}
+
+		a_movies[iconInfo.SourcePath] = movie;
 
 		auto discoveredIcon = movie->GetResource(iconInfo.ExportName.data());
 		auto undiscoveredIcon = movie->GetResource(iconInfo.ExportNameUndiscovered.data());
 
 		if (discoveredIcon && discoveredIcon->GetResourceType() == ResourceType::kSpriteDef) {
-			_icons[IconTypes::Discovered][i] = static_cast<RE::GFxSpriteDef*>(discoveredIcon);
+			a_icons[IconTypes::Discovered][i] = static_cast<RE::GFxSpriteDef*>(discoveredIcon);
 		}
 
 		if (undiscoveredIcon && undiscoveredIcon->GetResourceType() == ResourceType::kSpriteDef) {
-			_icons[IconTypes::Undiscovered][i] = static_cast<RE::GFxSpriteDef*>(undiscoveredIcon);
+			a_icons[IconTypes::Undiscovered][i] = static_cast<RE::GFxSpriteDef*>(undiscoveredIcon);
 		}
 	}
 }
@@ -122,7 +124,7 @@ void ImportManager::SetupHUDMenu(RE::GFxMovieView* a_movieView)
 			MenuType::HUD);
 
 		std::int32_t newFrames = static_cast<std::int32_t>(_customIcons.size());
-		//*(compassMarker->frameLabels.Get("UndiscoveredMarkers")) += newFrames;
+		*(compassMarker->frameLabels.Get("UndiscoveredMarkers")) += newFrames;
 
 		std::int32_t undiscoveredMarkersNew = undiscoveredMarkers + 1 + newFrames;
 
@@ -201,7 +203,7 @@ void ImportManager::SetupMapMenu(RE::GFxMovieView* a_movieView)
 			MenuType::Map);
 
 		auto newFrames = static_cast<std::int32_t>(_customIcons.size());
-		//*(mapMarker->frameLabels.Get("Undiscovered")) += newFrames;
+		*(mapMarker->frameLabels.Get("Undiscovered")) += newFrames;
 
 		std::int32_t undiscoveredOffsetNew = undiscovered + newFrames;
 
@@ -246,12 +248,17 @@ void ImportManager::InsertCustomIcons(
 	auto& allocator = loadTaskData->allocator;
 	auto alloc = [&allocator](std::size_t a_size) { return allocator.Alloc(a_size); };
 
+	std::unordered_map<std::string, RE::GFxMovieDefImpl*> movies;
+	std::vector<RE::GFxSpriteDef*> icons[IconTypes::Total];
+
+	LoadIcons(movies, icons);
+
 	std::unordered_map<std::string, std::uint32_t> movieIndices;
-	ImportMovies(a_movieDef, movieIndices);
+	ImportMovies(a_movieDef, movies, movieIndices);
 
 	std::vector<std::uint16_t> ids[IconTypes::Total];
 	std::vector<float> iconScales;
-	ImportResources(a_movieDef, movieIndices, ids, iconScales);
+	ImportResources(a_movieDef, movies, movieIndices, icons, ids, iconScales);
 
 	using PlaceFlags = RE::GFxPlaceObject2::PlaceFlags;
 	for (std::int32_t iconType = 0; iconType < IconTypes::Total; iconType++) {
@@ -280,6 +287,7 @@ void ImportManager::InsertCustomIcons(
 
 void ImportManager::ImportMovies(
 	RE::GFxMovieDefImpl* a_movieDef,
+	const std::unordered_map<std::string, RE::GFxMovieDefImpl*>& a_movies,
 	std::unordered_map<std::string, std::uint32_t>& a_movieIndices)
 {
 	auto& bindTaskData = a_movieDef->bindTaskData;
@@ -290,17 +298,17 @@ void ImportManager::ImportMovies(
 
 	auto& importedMovies = bindTaskData->importedMovies;
 	std::size_t numImportedMovies = importedMovies.GetSize();
-	importedMovies.Reserve(numImportedMovies + _importedMovies.size());
+	importedMovies.Reserve(numImportedMovies + a_movies.size());
 
-	for (auto& [path, movie] : _importedMovies) {
+	for (auto& [path, movie] : a_movies) {
 		auto movieIndex = importedMovies.GetSize();
 		a_movieIndices[path] = static_cast<std::uint32_t>(movieIndex);
 		importedMovies.PushBack(movie);
 	}
 
-	std::size_t arraySize = sizeof(RE::GASExecuteTag*) * _importedMovies.size();
+	std::size_t arraySize = sizeof(RE::GASExecuteTag*) * a_movies.size();
 	auto tagList = static_cast<RE::GASExecuteTag**>(allocator.Alloc(arraySize));
-	for (std::size_t i = 0, size = _importedMovies.size(); i < size; i++) {
+	for (std::size_t i = 0, size = a_movies.size(); i < size; i++) {
 		auto movie = numImportedMovies + i;
 		tagList[i] = TagFactory::MakeInitImportActions(
 			alloc,
@@ -309,7 +317,7 @@ void ImportManager::ImportMovies(
 
 	loadTaskData->importFrames.PushBack(ExecuteTagList{
 		.data = tagList,
-		.size = static_cast<std::uint32_t>(_importedMovies.size()),
+		.size = static_cast<std::uint32_t>(a_movies.size()),
 	});
 
 	loadTaskData->importFrameCount++;
@@ -317,7 +325,9 @@ void ImportManager::ImportMovies(
 
 void ImportManager::ImportResources(
 	RE::GFxMovieDefImpl* a_movieDef,
+	const std::unordered_map<std::string, RE::GFxMovieDefImpl*>& a_movies,
 	const std::unordered_map<std::string, std::uint32_t>& a_movieIndices,
+	const std::vector<RE::GFxSpriteDef*> a_icons[],
 	std::vector<std::uint16_t> a_ids[],
 	std::vector<float>& a_iconScales)
 {
@@ -336,7 +346,7 @@ void ImportManager::ImportResources(
 
 	for (std::size_t iconIndex = 0, size = _customIcons.size(); iconIndex < size; iconIndex++) {
 		auto& icon = _customIcons[iconIndex];
-		auto& movie = _importedMovies[icon.SourcePath];
+		auto& movie = a_movies.at(icon.SourcePath);
 		std::uint32_t movieIndex = a_movieIndices.at(icon.SourcePath);
 
 		auto importInfo = new (allocator.Alloc(sizeof(RE::GFxImportNode))) RE::GFxImportNode{
@@ -385,7 +395,7 @@ void ImportManager::ImportResources(
 		for (std::int32_t iconType = 0; iconType < IconTypes::Total; iconType++) {
 			ImportedResource importedResource{};
 			importedResource.importData = std::addressof(movie->bindTaskData->importData);
-			importedResource.resource = RE::GPtr(_icons[iconType][iconIndex]);
+			importedResource.resource = RE::GPtr(a_icons[iconType][iconIndex]);
 			newResources.push_back(importedResource);
 		}
 	}

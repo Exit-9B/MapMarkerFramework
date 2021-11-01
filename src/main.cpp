@@ -119,8 +119,6 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 
 				MapConfigLoader::GetSingleton()->LoadAll();
 
-				ImportManager::GetSingleton()->LoadIcons();
-
 				break;
 			}
 		});
