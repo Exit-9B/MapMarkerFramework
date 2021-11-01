@@ -253,6 +253,9 @@ auto SWFOutputStream::Get() -> std::string_view
 void SWFOutputStream::Clear()
 {
 	_os.str(""s);
+	_pos = 0;
+	_bitPos = 0;
+	_tempByte = 0;
 }
 
 void SWFOutputStream::AlignByte()
