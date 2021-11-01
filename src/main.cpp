@@ -1,5 +1,52 @@
 #include "Hooks.h"
 #include "MapConfigLoader.h"
+#include "ImportManager.h"
+
+class ScaleformLog : public RE::GFxLog
+{
+public:
+	void LogMessageVarg(
+		LogMessageType a_messageType,
+		const char* a_fmt,
+		std::va_list a_argList) override
+	{
+		LogMessageType messageType =
+			static_cast<LogMessageType>(RE::stl::to_underlying(a_messageType) & 0xF);
+
+		spdlog::level::level_enum level;
+
+		switch (messageType) {
+		case LogMessageType::kMessageType_Error:
+			level = spdlog::level::level_enum::err;
+			break;
+		case LogMessageType::kMessageType_Warning:
+			level = spdlog::level::level_enum::warn;
+			break;
+		case LogMessageType::kMessageType_Message:
+			level = spdlog::level::level_enum::info;
+			break;
+		default:
+			level = spdlog::level::level_enum::trace;
+			break;
+		}
+
+		int len = _vscprintf(a_fmt, a_argList);
+		if (len == -1) {
+			return;
+		}
+
+		std::size_t size = static_cast<std::size_t>(len) + 1;
+
+		char* str = static_cast<char*>(malloc(size));
+		vsprintf_s(str, size, a_fmt, a_argList);
+
+		std::string_view sv{ str, size };
+
+		spdlog::default_logger()->log(level, sv);
+	}
+};
+
+inline static ScaleformLog scaleformLog{};
 
 extern "C" DLLEXPORT bool SKSEAPI
 	SKSEPlugin_Query(const SKSE::QueryInterface* a_skse, SKSE::PluginInfo* a_info)
@@ -56,6 +103,8 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 
 	SKSE::Init(a_skse);
 
+	SKSE::AllocTrampoline(28);
+
 	Hooks::Install();
 
 	auto messaging = SKSE::GetMessagingInterface();
@@ -63,8 +112,16 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 		{
 			switch (a_msg->type) {
 			case SKSE::MessagingInterface::kDataLoaded:
-				MapConfigLoader loader{};
-				loader.LoadAll();
+				auto scaleformManager = RE::BSScaleformManager::GetSingleton();
+				scaleformManager->loader->SetState(
+					RE::GFxState::StateType::kLog,
+					std::addressof(scaleformLog));
+
+				MapConfigLoader::GetSingleton()->LoadAll();
+
+				ImportManager::GetSingleton()->LoadIcons();
+
+				break;
 			}
 		});
 

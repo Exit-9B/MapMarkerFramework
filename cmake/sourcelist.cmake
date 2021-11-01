@@ -1,4 +1,6 @@
 set(SOURCES ${SOURCES}
+    src/ActionGenerator.cpp
+    src/ActionGenerator.h
     src/DiscoveryMusicManager.cpp
     src/DiscoveryMusicManager.h
     src/FormUtil.cpp
@@ -11,5 +13,9 @@ set(SOURCES ${SOURCES}
     src/MapConfigLoader.h
     src/PCH.cpp
     src/PCH.h
+    src/SWFOutputStream.cpp
+    src/SWFOutputStream.h
+    src/TagFactory.cpp
+    src/TagFactory.h
     src/main.cpp
 )

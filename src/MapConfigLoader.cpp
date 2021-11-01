@@ -5,6 +5,12 @@
 #include "ImportManager.h"
 #include <json/json.h>
 
+auto MapConfigLoader::GetSingleton() -> MapConfigLoader*
+{
+	static MapConfigLoader singleton{};
+	return std::addressof(singleton);
+}
+
 void MapConfigLoader::LoadAll()
 {
 	const auto dataHandler = RE::TESDataHandler::GetSingleton();
@@ -27,8 +33,6 @@ void MapConfigLoader::LoadAll()
 			LoadFromFile(mapMarkerFile);
 		}
 	}
-
-	UpdateMarkers();
 }
 
 void MapConfigLoader::LoadFromFile(std::filesystem::path a_file)
@@ -52,23 +56,45 @@ void MapConfigLoader::LoadFromFile(std::filesystem::path a_file)
 			}
 
 			auto name = iconDef["name"].asString();
-			auto source = iconDef["source"].asString();
-			auto exportName = iconDef["exportName"].asString();
+			auto& source = iconDef["source"];
+
+			auto scale = iconDef["scale"].asDouble();
+			if (!scale) {
+				scale = 1.0;
+			}
+
 			auto discoveryMusic = iconDef["discoveryMusic"].asString();
 
-			std::uint32_t index = 0;
+			if (!name.empty() && source.isObject()) {
+				auto path = source["path"].asString();
 
-			if (!name.empty() && !source.empty()) {
-				index = importManager->AddCustomIcon(source, exportName);
-				_iconNames[name] = static_cast<RE::MARKER_TYPE>(index);
+				std::string exportName, exportNameUndiscovered;
+				auto& exportNames = source["exportNames"];
+				if (exportNames.isArray() && exportNames.size() == 2) {
+					exportName = exportNames[0].asString();
+					exportNameUndiscovered = exportNames[1].asString();
+				}
+
+				importManager->AddCustomIcon(
+					path,
+					exportName,
+					exportNameUndiscovered,
+					scale);
+
+				_iconNames[name] = _lastIcon++;
+
+				if (!discoveryMusic.empty()) {
+					_discoveryMusic[name] = discoveryMusic;
+				}
 			}
 			else {
-				// TODO enforce max index from swf
-				index = iconDef["index"].asUInt();
-			}
+				std::uint32_t index = iconDef["index"].asUInt();
 
-			auto markerType = static_cast<RE::MARKER_TYPE>(index);
-			discoveryMusicManager->SetMusic(markerType, discoveryMusic);
+				if (index) {
+					auto markerType = static_cast<RE::MARKER_TYPE>(index);
+					discoveryMusicManager->SetMusic(markerType, discoveryMusic);
+				}
+			}
 		}
 	}
 
@@ -118,27 +144,39 @@ void MapConfigLoader::LoadFromFile(std::filesystem::path a_file)
 	}
 }
 
-void MapConfigLoader::UpdateMarkers()
+void MapConfigLoader::UpdateMarkers(std::uint32_t a_customIconIndex) const
 {
 	for (auto& [markerRef, marker] : _mapMarkers) {
-		auto markerType = ResolveMarker(marker);
+		auto markerType = ResolveMarker(marker, a_customIconIndex);
 		if (!markerRef || markerType == RE::MARKER_TYPE::kNone) {
 			continue;
 		}
 
 		UpdateMapMarker(markerRef, markerType);
+
+		if (std::holds_alternative<std::string>(marker)) {
+			auto& markerName = std::get<std::string>(marker);
+			auto it = _discoveryMusic.find(markerName);
+			if (it != _discoveryMusic.end()) {
+				DiscoveryMusicManager::GetSingleton()->SetMusic(markerType, it->second);
+			}
+		}
 	}
 }
 
-auto MapConfigLoader::ResolveMarker(MapMarker a_marker) -> RE::MARKER_TYPE
+auto MapConfigLoader::ResolveMarker(MapMarker a_marker, std::uint32_t a_customIconIndex) const
+	-> RE::MARKER_TYPE
 {
 	if (std::holds_alternative<RE::MARKER_TYPE>(a_marker)) {
-		return std::get<RE::MARKER_TYPE>(a_marker);
+		auto markerType = std::get<RE::MARKER_TYPE>(a_marker);
+		if (static_cast<std::uint32_t>(markerType) < a_customIconIndex) {
+			return markerType;
+		}
 	}
-	else if (std::holds_alternative<std::string>(a_marker)) {
+	else if (std::holds_alternative<std::string>(a_marker) && a_customIconIndex != 0) {
 		auto item = _iconNames.find(std::get<std::string>(a_marker));
 		if (item != _iconNames.end()) {
-			return item->second;
+			return static_cast<RE::MARKER_TYPE>(a_customIconIndex + item->second);
 		}
 	}
 

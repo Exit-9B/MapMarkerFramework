@@ -85,6 +85,7 @@ add_subdirectory("extern/CommonLibSSE" CommonLibSSE)
 find_package(spdlog REQUIRED CONFIG)
 find_package(xbyak REQUIRED)
 find_package(jsoncpp REQUIRED)
+find_package(tsl-ordered-map REQUIRED CONFIG)
 
 # ---- Add source files ----
 
