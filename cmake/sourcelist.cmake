@@ -7,6 +7,8 @@ set(SOURCES ${SOURCES}
     src/FormUtil.h
     src/Hooks.cpp
     src/Hooks.h
+    src/ImportData.cpp
+    src/ImportData.h
     src/ImportManager.cpp
     src/ImportManager.h
     src/MapConfigLoader.cpp
