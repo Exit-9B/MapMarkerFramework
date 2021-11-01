@@ -181,7 +181,11 @@ void ImportManager::SetupMapMenu(RE::GFxMovieView* a_movieView)
 		RE::GFxValue iconMap;
 		a_movieView->GetVariable(std::addressof(iconMap), "Map.MapMarker.ICON_MAP");
 		if (iconMap.IsArray()) {
-			logger::trace("ICON_MAP has {} icons"sv, iconMap.GetArraySize());
+			logger::trace(
+				"ICON_MAP has {} names, adding {} more"sv,
+				iconMap.GetArraySize(),
+				_customIcons.size());
+
 			for (std::size_t i = 0, size = _customIcons.size(); i < size; i++) {
 				auto str = fmt::format("Marker{}"sv, i);
 				iconMap.PushBack(str.data());
