@@ -16,7 +16,7 @@ void ImportManager::AddCustomIcon(
 	const std::string& a_exportNameUndiscovered,
 	float a_iconScale)
 {
-	auto path = std::filesystem::path{ "Data\\MapMarkers"sv } / a_source;
+	auto path = std::filesystem::path{ "MapMarkers"sv } / a_source;
 	auto pathStr = path.string();
 
 	_customIcons.push_back({ pathStr, a_exportName, a_exportNameUndiscovered, a_iconScale });

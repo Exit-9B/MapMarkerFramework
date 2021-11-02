@@ -19,7 +19,6 @@ void MapConfigLoader::LoadAll()
 		return;
 	}
 
-	auto mapMarkerDir = std::filesystem::path{ "Data\\MapMarkers" };
 	for (auto file : dataHandler->files) {
 		if (!file) {
 			continue;

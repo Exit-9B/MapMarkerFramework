@@ -20,7 +20,7 @@ void ImportData::InsertCustomIcons(
 	}
 
 	const std::string& resourceFile = settings->Resources.sResourceFile;
-	auto resourcePath = std::filesystem::path{ "Data\\MapMarkers"sv } / resourceFile;
+	auto resourcePath = std::filesystem::path{ "MapMarkers"sv } / resourceFile;
 	auto resourcePathStr = resourcePath.string();
 
 	_numIcons = a_iconInfo.size();
