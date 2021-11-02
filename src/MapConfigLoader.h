@@ -11,7 +11,9 @@ public:
 private:
 	using MapMarker = std::variant<RE::MARKER_TYPE, std::string>;
 
-	void LoadFromFile(std::filesystem::path a_file);
+	void LoadFromFile(
+		const std::string& a_fileName,
+		const RE::BSResourceNiBinaryStream& a_fileStream);
 	auto ResolveMarker(MapMarker a_marker, std::uint32_t a_customIconIndex) const -> RE::MARKER_TYPE;
 
 	static void UpdateMapMarker(RE::TESObjectREFR* a_markerRef, RE::MARKER_TYPE a_icon);

@@ -27,21 +27,32 @@ void MapConfigLoader::LoadAll()
 
 		auto fileName = std::filesystem::path{ file->fileName };
 		fileName.replace_extension("json"sv);
-		auto mapMarkerFile = mapMarkerDir / fileName;
+		auto mapMarkerFile = std::filesystem::path{ "MapMarkers" } / fileName;
 
-		auto dirEntry = std::filesystem::directory_entry{ mapMarkerFile };
-		if (dirEntry.exists()) {
-			LoadFromFile(mapMarkerFile);
+		RE::BSResourceNiBinaryStream fileStream{ mapMarkerFile.string() };
+
+		if (!fileStream.good()) {
+			continue;
 		}
+
+		LoadFromFile(file->fileName, fileStream);
 	}
 }
 
-void MapConfigLoader::LoadFromFile(std::filesystem::path a_file)
+void MapConfigLoader::LoadFromFile(
+	const std::string& a_fileName,
+	const RE::BSResourceNiBinaryStream& a_fileStream)
 {
+	auto size = a_fileStream.stream->totalSize;
+	auto buffer = std::string(size, '\0');
+	std::uint64_t read;
+	a_fileStream.stream->DoRead(buffer.data(), size, read);
+
 	Json::Value root;
-	if (auto fs = std::ifstream{ a_file }) {
-		fs >> root;
+	if (auto stream = std::istringstream{ buffer }) {
+		stream >> root;
 	}
+	else return;
 
 	auto importManager = ImportManager::GetSingleton();
 	auto discoveryMusicManager = DiscoveryMusicManager::GetSingleton();
@@ -52,7 +63,7 @@ void MapConfigLoader::LoadFromFile(std::filesystem::path a_file)
 			if (!iconDef.isObject()) {
 				logger::warn(
 					"Failed to fetch icon definitions from {}"sv,
-					a_file.filename().string());
+					a_fileName);
 				continue;
 			}
 
@@ -107,7 +118,7 @@ void MapConfigLoader::LoadFromFile(std::filesystem::path a_file)
 	if (mapMarkers.isArray()) {
 		for (auto& mapMarker : mapMarkers) {
 			if (!mapMarker.isObject()) {
-				logger::warn("Failed to fetch map markers from {}"sv, a_file.filename().string());
+				logger::warn("Failed to fetch map markers from {}"sv, a_fileName);
 				continue;
 			}
 
@@ -116,7 +127,7 @@ void MapConfigLoader::LoadFromFile(std::filesystem::path a_file)
 			if (refID.empty()) {
 				logger::warn(
 					"Map marker missing reference ID in {}"sv,
-					a_file.filename().string());
+					a_fileName);
 				continue;
 			}
 
@@ -127,7 +138,7 @@ void MapConfigLoader::LoadFromFile(std::filesystem::path a_file)
 				logger::warn(
 					"'{}' did not correspond to a valid Object Reference in {}"sv,
 					refID,
-					a_file.filename().string());
+					a_fileName);
 				continue;
 			}
 
@@ -143,7 +154,7 @@ void MapConfigLoader::LoadFromFile(std::filesystem::path a_file)
 				_mapMarkers[markerRef] = markerType;
 			}
 			else {
-				logger::warn("Map marker missing icon data in {}"sv, a_file.filename().string());
+				logger::warn("Map marker missing icon data in {}"sv, a_fileName);
 			}
 		}
 	}
