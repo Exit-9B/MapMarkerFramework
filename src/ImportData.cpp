@@ -81,7 +81,7 @@ void ImportData::InsertCustomIcons(
 			auto placeObject = MakeReplaceObject(alloc, _ids[iconType][i]);
 			assert(placeObject);
 
-			if (_menuType == MenuType::Map && _iconScales[i] != 1.0) {
+			if (_menuType == MenuType::Map && _iconScales[i] != 1.0f) {
 				auto doAction = MakeMarkerScaleAction(alloc, _iconScales[i]);
 				assert(doAction);
 

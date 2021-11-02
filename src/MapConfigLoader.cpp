@@ -71,7 +71,7 @@ void MapConfigLoader::LoadFromFile(
 
 			auto scale = iconDef["scale"].asFloat();
 			if (!scale) {
-				scale = 1.0;
+				scale = 1.0f;
 			}
 
 			auto discoveryMusic = iconDef["discoveryMusic"].asString();
