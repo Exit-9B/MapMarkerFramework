@@ -38,20 +38,34 @@ void MapConfigLoader::LoadAll()
 	}
 }
 
+RE::BSResourceNiBinaryStream& operator>>(RE::BSResourceNiBinaryStream& a_sin, Json::Value& a_root)
+{
+	Json::CharReaderBuilder fact;
+	std::unique_ptr<Json::CharReader> const reader{ fact.newCharReader() };
+
+	auto size = a_sin.stream->totalSize;
+	auto buffer = std::make_unique<char[]>(size);
+	a_sin.read(buffer.get(), size);
+
+	auto begin = buffer.get();
+	auto end = begin + size;
+
+	std::string errs;
+	bool ok = reader->parse(begin, end, std::addressof(a_root), std::addressof(errs));
+
+	if (!ok) {
+		throw std::runtime_error{ errs };
+	}
+
+	return a_sin;
+}
+
 void MapConfigLoader::LoadFromFile(
 	const std::string& a_fileName,
-	const RE::BSResourceNiBinaryStream& a_fileStream)
+	RE::BSResourceNiBinaryStream& a_fileStream)
 {
-	auto size = a_fileStream.stream->totalSize;
-	auto buffer = std::string(size, '\0');
-	std::uint64_t read;
-	a_fileStream.stream->DoRead(buffer.data(), size, read);
-
 	Json::Value root;
-	if (auto stream = std::istringstream{ buffer }) {
-		stream >> root;
-	}
-	else return;
+	a_fileStream >> root;
 
 	auto importManager = ImportManager::GetSingleton();
 	auto discoveryMusicManager = DiscoveryMusicManager::GetSingleton();
