@@ -97,6 +97,8 @@ auto TagFactory::MakeRemoveObject(
 	auto removeObject = static_cast<RE::GFxRemoveObject2*>(
 		a_alloc(sizeof(RE::GFxRemoveObject2)));
 
+	std::memset(removeObject, 0, sizeof(RE::GFxRemoveObject2));
+
 	if (removeObject) {
 		*reinterpret_cast<std::uintptr_t*>(removeObject) = GFxRemoveObject2_vtbl.get();
 
@@ -115,6 +117,8 @@ auto TagFactory::MakeRemoveObject(
 
 	auto removeObject = static_cast<RE::GFxRemoveObject*>(
 		a_alloc(sizeof(RE::GFxRemoveObject)));
+
+	std::memset(removeObject, 0, sizeof(RE::GFxRemoveObject));
 
 	if (removeObject) {
 		*reinterpret_cast<std::uintptr_t*>(removeObject) = GFxRemoveObject_vtbl.get();
@@ -135,6 +139,8 @@ auto TagFactory::MakeInitImportActions(
 	auto initImportActions = static_cast<RE::GFxInitImportActions*>(
 		a_alloc(sizeof(RE::GFxInitImportActions)));
 
+	std::memset(initImportActions, 0, sizeof(RE::GFxInitImportActions));
+
 	if (initImportActions) {
 		*reinterpret_cast<std::uintptr_t*>(initImportActions) = GFxInitImportActions_vtbl.get();
 
@@ -151,6 +157,7 @@ auto TagFactory::MakeDoAction(
 	static REL::Relocation<std::uintptr_t> GASDoAction_vtbl{ REL::ID(291613) };
 
 	auto doAction = static_cast<RE::GASDoAction*>(a_alloc(sizeof(RE::GASDoAction)));
+	std::memset(doAction, 0, sizeof(RE::GASDoAction));
 	assert(!doAction->data);
 
 	if (doAction) {

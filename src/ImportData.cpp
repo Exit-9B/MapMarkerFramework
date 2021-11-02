@@ -85,13 +85,16 @@ void ImportData::InsertCustomIcons(
 				auto doAction = MakeMarkerScaleAction(alloc, _iconScales[i]);
 				assert(doAction);
 
-				_marker->frames[i + insertPos] = MakeTagList(alloc, { placeObject, doAction });
+				_marker->frames[insertPos + i] = MakeTagList(alloc, { placeObject, doAction });
 			}
 			else {
-				_marker->frames[i + insertPos] = MakeTagList(alloc, { placeObject });
+				_marker->frames[insertPos + i] = MakeTagList(alloc, { placeObject });
 			}
 		}
 	}
+
+	auto removeObject = TagFactory::MakeRemoveObject(alloc, 1);
+	_marker->frames[a_insertPos + _numIcons] = MakeTagList(alloc, { removeObject });
 
 	if (obscureUndiscovered) {
 		auto placeObject = MakeReplaceObject(alloc, _ids[IconTypes::Undiscovered][0]);
@@ -336,6 +339,7 @@ auto ImportData::MakeMarkerScaleAction(AllocateCallback a_alloc, float a_iconSca
 	Action action{ a_iconScale };
 	action.Ready();
 	auto bufferData = action.GetCode();
+	assert(bufferData);
 
 	return TagFactory::MakeDoAction(a_alloc, bufferData);
 }

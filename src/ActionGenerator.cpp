@@ -14,6 +14,8 @@ auto ActionGenerator::GetCode() -> RE::GASActionBufferData*
 	auto bufferData = static_cast<RE::GASActionBufferData*>(
 		RE::GMemory::Alloc(sizeof(RE::GASActionBufferData)));
 
+	std::memset(bufferData, 0, sizeof(RE::GASActionBufferData));
+
 	*reinterpret_cast<std::uintptr_t*>(bufferData) = GASActionBufferData_vtbl.get();
 
 	auto code = _committed.Get();
