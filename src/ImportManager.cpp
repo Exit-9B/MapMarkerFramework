@@ -64,17 +64,19 @@ void ImportManager::SetupHUDMenu(RE::GFxMovieView* a_movieView)
 	std::size_t undiscoveredOffset = static_cast<size_t>(undiscoveredMarkers) - locationMarkers;
 	std::size_t insertPos = static_cast<size_t>(undiscoveredMarkers) - 1;
 
+	// walk back until you find the RemoveObject frame
+	while (insertPos > locationMarkers + 66 && !compassMarker->frames[insertPos].data) {
+		insertPos--;
+	}
+
 	logger::trace(
 		"Inserting icons at position {} + undiscovered offset {}"sv,
 		insertPos,
 		undiscoveredOffset);
 
-	// walk back until you find the RemoveObject frame
-	while (insertPos > locationMarkers && !compassMarker->frames[insertPos].data) {
-		insertPos--;
-	}
-
 	std::size_t iconCount = insertPos - locationMarkers + 1;
+
+	assert(iconCount >= 67);
 
 	if (!_baseIndex) {
 		_baseIndex = static_cast<std::uint32_t>(iconCount);
@@ -95,7 +97,7 @@ void ImportManager::SetupHUDMenu(RE::GFxMovieView* a_movieView)
 			_customIcons,
 			insertPos,
 			undiscoveredOffset,
-			iconCount);
+			_baseIndex);
 
 		*(compassMarker->frameLabels.Get("UndiscoveredMarkers")) += newFrames;
 
@@ -151,23 +153,24 @@ void ImportManager::SetupMapMenu(RE::GFxMovieView* a_movieView)
 		return;
 	}
 
+	std::int32_t discovered = 0;
+	mapMarker->GetLabeledFrame("Discovered", discovered, false);
+
 	std::int32_t undiscovered = 0;
 	mapMarker->GetLabeledFrame("Undiscovered", undiscovered, false);
 
-	std::size_t undiscoveredOffset = static_cast<size_t>(undiscovered);
-	std::size_t insertPos = undiscoveredOffset;
+	std::size_t undiscoveredOffset = static_cast<size_t>(undiscovered - discovered);
+	std::size_t insertPos = discovered + _baseIndex;
+
+	if (!_baseIndex) {
+		logger::critical("HUD didn't load correctly, can't load Map"sv);
+		return;
+	}
 
 	logger::trace(
 		"Inserting icons at position {} + undiscovered offset {}"sv,
 		insertPos,
 		undiscoveredOffset);
-
-	std::size_t iconCount = insertPos;
-
-	if (insertPos != _baseIndex) {
-		logger::error("Map had {} icons, expected {}"sv, iconCount, _baseIndex);
-		return;
-	}
 
 	if (!_customIcons.empty()) {
 		ImportData importData{
@@ -177,13 +180,13 @@ void ImportManager::SetupMapMenu(RE::GFxMovieView* a_movieView)
 		};
 
 		std::int32_t newFrames = static_cast<std::int32_t>(_customIcons.size());
-		std::int32_t undiscoveredOffsetNew = undiscovered + newFrames;
+		std::size_t undiscoveredOffsetNew = undiscoveredOffset + newFrames;
 
 		importData.InsertCustomIcons(
 			_customIcons,
 			insertPos,
 			undiscoveredOffset,
-			iconCount);
+			_baseIndex);
 
 		*(mapMarker->frameLabels.Get("Undiscovered")) += newFrames;
 
@@ -191,7 +194,7 @@ void ImportManager::SetupMapMenu(RE::GFxMovieView* a_movieView)
 
 		a_movieView->SetVariableDouble(
 			"Map.MapMarker.UNDISCOVERED_OFFSET",
-			undiscoveredOffsetNew);
+			static_cast<double>(undiscoveredOffsetNew));
 
 		RE::GFxValue iconMap;
 		a_movieView->GetVariable(std::addressof(iconMap), "Map.MapMarker.ICON_MAP");
