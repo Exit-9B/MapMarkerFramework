@@ -17,6 +17,8 @@ set(SOURCES ${SOURCES}
     src/PCH.h
     src/SWFOutputStream.cpp
     src/SWFOutputStream.h
+    src/Settings.cpp
+    src/Settings.h
     src/TagFactory.cpp
     src/TagFactory.h
     src/main.cpp

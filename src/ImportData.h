@@ -37,15 +37,18 @@ public:
 	void InsertCustomIcons(
 		const std::vector<IconInfo>& a_iconInfo,
 		std::size_t a_insertPos,
-		std::size_t a_undiscoveredOffset);
+		std::size_t a_undiscoveredOffset,
+		std::size_t a_baseCount);
 
 private:
 	using AllocateCallback = std::function<void*(std::size_t)>;
 	using ExecuteTagList = RE::GFxTimelineDef::ExecuteTagList;
 
-	void LoadIcons(const std::vector<IconInfo>& a_iconInfo);
+	auto LoadMovie(const std::string& a_sourcePath) -> RE::GFxMovieDefImpl*;
+
+	void LoadIcons();
 	void ImportMovies();
-	void ImportResources(const std::vector<IconInfo>& a_iconInfo);
+	void ImportResources();
 
 	static auto MakeReplaceObject(
 		AllocateCallback a_alloc,
@@ -60,9 +63,19 @@ private:
 		std::initializer_list<RE::GASExecuteTag*> a_tags) -> ExecuteTagList;
 
 private:
+	struct IconId
+	{
+		std::string exportName;
+		std::int32_t iconType;
+		std::size_t index;
+	};
+
 	RE::GFxMovieDefImpl* _targetMovie;
 	RE::GFxSpriteDef* _marker;
 	MenuType _menuType;
+
+	std::unordered_map<std::string, std::list<IconId>> _importResources;
+	std::size_t _numIcons;
 
 	std::unordered_map<std::string, RE::GFxMovieDefImpl*> _importedMovies;
 	std::unordered_map<std::string, std::uint32_t> _movieIndices;

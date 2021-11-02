@@ -54,7 +54,19 @@ void SWFOutputStream::WriteUI32(std::uint32_t a_value)
 {
 	Write(a_value & 0xFF);
 	Write((a_value >> 8) & 0xFF);
-	Write((a_value >> 16) && 0xFF);
+	Write((a_value >> 16) & 0xFF);
+	Write((a_value >> 24) & 0xFF);
+}
+
+void SWFOutputStream::WriteUI64(std::uint64_t a_value)
+{
+	Write((a_value >> 32) & 0xFF);
+	Write((a_value >> 40) & 0xFF);
+	Write((a_value >> 48) & 0xFF);
+	Write((a_value >> 56) & 0xFF);
+	Write(a_value & 0xFF);
+	Write((a_value >> 8) & 0xFF);
+	Write((a_value >> 16) & 0xFF);
 	Write((a_value >> 24) & 0xFF);
 }
 
@@ -70,29 +82,29 @@ void SWFOutputStream::WriteFIXED8(float a_value)
 
 void SWFOutputStream::WriteFLOAT(float a_value)
 {
-	union FloatConverter
+	union FloatToInt
 	{
 		float value;
+		std::uint32_t intBits;
 		char bytes[sizeof(double)];
 	};
 
-	FloatConverter cv{ .value = a_value };
+	FloatToInt cv{ .value = a_value };
 
-	Write(std::string_view(std::addressof(cv.bytes[0]), 4));
+	WriteUI32(cv.intBits);
 }
 
 void SWFOutputStream::WriteDOUBLE(double a_value)
 {
-	union DoubleConverter
+	union DoubleToInt
 	{
 		double value;
-		char bytes[sizeof(double)];
+		std::uint64_t intBits;
 	};
 
-	DoubleConverter cv{ .value = a_value };
+	DoubleToInt cv{ .value = a_value };
 
-	Write(std::string_view(std::addressof(cv.bytes[4]), 4));
-	Write(std::string_view(std::addressof(cv.bytes[0]), 4));
+	WriteUI64(cv.intBits);
 }
 
 void SWFOutputStream::WriteMATRIX(const RE::GMatrix2D& a_value)

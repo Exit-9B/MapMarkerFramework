@@ -1,18 +1,62 @@
 #include "ImportData.h"
 #include "ActionGenerator.h"
+#include "Settings.h"
 #include "TagFactory.h"
 
 void ImportData::InsertCustomIcons(
 	const std::vector<IconInfo>& a_iconInfo,
 	std::size_t a_insertPos,
-	std::size_t a_undiscoveredOffset)
+	std::size_t a_undiscoveredOffset,
+	std::size_t a_baseCount)
 {
-	auto newFrames = static_cast<std::int32_t>(a_iconInfo.size());
+	auto settings = Settings::GetSingleton();
 
-	_marker->frames.InsertMultipleAt(a_insertPos, newFrames);
-	auto undiscoveredOffset = a_undiscoveredOffset + newFrames;
+	bool obscureUndiscovered = false;
+	if (_menuType == MenuType::HUD) {
+		obscureUndiscovered = settings->HUD.bObscuredUndiscovered;
+	}
+	else if (_menuType == MenuType::Map) {
+		obscureUndiscovered = settings->Map.bObscuredUndiscovered;
+	}
 
-	_marker->frames.InsertMultipleAt(a_insertPos + undiscoveredOffset, newFrames);
+	const std::string& resourceFile = settings->Resources.sResourceFile;
+	auto resourcePath = std::filesystem::path{ "Data\\MapMarkers"sv } / resourceFile;
+	auto resourcePathStr = resourcePath.string();
+
+	_numIcons = a_iconInfo.size();
+	_iconScales.reserve(_numIcons);
+
+	for (std::size_t i = 0; i < _numIcons; i++) {
+		auto& iconInfo = a_iconInfo[i];
+		auto [it, result] = _importResources.try_emplace(iconInfo.SourcePath);
+		it->second.push_back({ iconInfo.ExportName, IconTypes::Discovered, i });
+		if (!obscureUndiscovered) {
+			it->second.push_back({ iconInfo.ExportNameUndiscovered, IconTypes::Undiscovered, i });
+		}
+
+		_iconScales.push_back(iconInfo.IconScale);
+	}
+
+	if (obscureUndiscovered) {
+		auto [it, result] = _importResources.try_emplace(resourcePathStr);
+		it->second.push_back({ "ObscuredUndiscoveredMarker"s, IconTypes::Undiscovered, 0 });
+	}
+
+	for (auto& [sourcePath, iconIds] : _importResources)
+	{
+		_importedMovies[sourcePath] = LoadMovie(sourcePath);
+	}
+
+	LoadIcons();
+	ImportMovies();
+	ImportResources();
+
+	std::int32_t newFrames = static_cast<std::int32_t>(_numIcons);
+
+	_marker->frames.InsertMultipleAt(a_insertPos, _numIcons);
+	auto undiscoveredOffset = a_undiscoveredOffset + _numIcons;
+
+	_marker->frames.InsertMultipleAt(a_insertPos + undiscoveredOffset, _numIcons);
 
 	_marker->frameCount += newFrames * 2;
 	_marker->frameLoading += newFrames * 2;
@@ -21,17 +65,18 @@ void ImportData::InsertCustomIcons(
 	auto& allocator = loadTaskData->allocator;
 	auto alloc = [&allocator](std::size_t a_size) { return allocator.Alloc(a_size); };
 
-	LoadIcons(a_iconInfo);
-	ImportMovies();
-	ImportResources(a_iconInfo);
-
 	for (std::int32_t iconType = 0; iconType < IconTypes::Total; iconType++) {
+
+		if (obscureUndiscovered && iconType == IconTypes::Undiscovered) {
+			continue;
+		}
+
 		auto insertPos = a_insertPos;
 		if (iconType == IconTypes::Undiscovered) {
 			insertPos += undiscoveredOffset;
 		}
 
-		for (std::int32_t i = 0; i < newFrames; i++) {
+		for (std::int32_t i = 0; i < _numIcons; i++) {
 
 			auto placeObject = MakeReplaceObject(alloc, _ids[iconType][i]);
 			assert(placeObject);
@@ -47,44 +92,56 @@ void ImportData::InsertCustomIcons(
 			}
 		}
 	}
+
+	if (obscureUndiscovered) {
+		auto placeObject = MakeReplaceObject(alloc, _ids[IconTypes::Undiscovered][0]);
+		auto start = a_insertPos + undiscoveredOffset - a_baseCount;
+		_marker->frames[start] = MakeTagList(alloc, { placeObject });
+
+		for (std::int32_t i = 1; i < a_baseCount; i++) {
+			_marker->frames[start + i] = { nullptr, 0 };
+		}
+	}
 }
 
-void ImportData::LoadIcons(const std::vector<IconInfo>& a_iconInfo)
+auto ImportData::LoadMovie(const std::string& a_sourcePath) -> RE::GFxMovieDefImpl*
+{
+	auto scaleformManager = RE::BSScaleformManager::GetSingleton();
+	auto loader = scaleformManager->loader;
+	auto movieDef = loader->CreateMovie(a_sourcePath.data());
+	if (!movieDef) {
+		logger::error("Failed to create movie from {}"sv, a_sourcePath);
+		return nullptr;
+	}
+
+	static REL::Relocation<std::uintptr_t> GFxMovieDefImpl_vtbl{ REL::ID(562342), 0x4BF0 };
+	if (*reinterpret_cast<std::uintptr_t*>(movieDef) != GFxMovieDefImpl_vtbl.get()) {
+		logger::critical("Loaded movie did not have the expected virtual table, aborting"sv);
+		return nullptr;
+	}
+
+	auto movieDefImpl = static_cast<RE::GFxMovieDefImpl*>(movieDef);
+
+	_importedMovies[a_sourcePath] = movieDefImpl;
+
+	return movieDefImpl;
+}
+
+void ImportData::LoadIcons()
 {
 	using ResourceType = RE::GFxResource::ResourceType;
 
-	_icons[IconTypes::Discovered].resize(a_iconInfo.size());
-	_icons[IconTypes::Undiscovered].resize(a_iconInfo.size());
+	_icons[IconTypes::Discovered].resize(_numIcons);
+	_icons[IconTypes::Undiscovered].resize(_numIcons);
 
-	for (std::size_t i = 0, size = a_iconInfo.size(); i < size; i++) {
-		auto& iconInfo = a_iconInfo[i];
+	for (auto& [sourcePath, iconIds] : _importResources) {
+		auto& movie = _importedMovies.at(sourcePath);
 
-		auto scaleformManager = RE::BSScaleformManager::GetSingleton();
-		auto loader = scaleformManager->loader;
-		auto movieDef = loader->CreateMovie(iconInfo.SourcePath.data());
-		if (!movieDef) {
-			continue;
-		}
-
-		static REL::Relocation<std::uintptr_t> GFxMovieDefImpl_vtbl{ REL::ID(562342), 0x4BF0 };
-		if (*reinterpret_cast<std::uintptr_t*>(movieDef) != GFxMovieDefImpl_vtbl.get()) {
-			logger::critical("Loaded movie did not have the expected virtual table, aborting"sv);
-			return;
-		}
-
-		auto movieDefImpl = static_cast<RE::GFxMovieDefImpl*>(movieDef);
-
-		_importedMovies[iconInfo.SourcePath] = movieDefImpl;
-
-		auto discoveredIcon = movieDef->GetResource(iconInfo.ExportName.data());
-		auto undiscoveredIcon = movieDef->GetResource(iconInfo.ExportNameUndiscovered.data());
-
-		if (discoveredIcon && discoveredIcon->GetResourceType() == ResourceType::kSpriteDef) {
-			_icons[IconTypes::Discovered][i] = static_cast<RE::GFxSpriteDef*>(discoveredIcon);
-		}
-
-		if (undiscoveredIcon && undiscoveredIcon->GetResourceType() == ResourceType::kSpriteDef) {
-			_icons[IconTypes::Undiscovered][i] = static_cast<RE::GFxSpriteDef*>(undiscoveredIcon);
+		for (auto& iconId : iconIds) {
+			auto icon = movie->GetResource(iconId.exportName.data());
+			if (icon && icon->GetResourceType() == ResourceType::kSpriteDef) {
+				_icons[iconId.iconType][iconId.index] = static_cast<RE::GFxSpriteDef*>(icon);
+			}
 		}
 	}
 }
@@ -124,7 +181,7 @@ void ImportData::ImportMovies()
 	loadTaskData->importFrameCount++;
 }
 
-void ImportData::ImportResources(const std::vector<IconInfo>& a_iconInfo)
+void ImportData::ImportResources()
 {
 	using ImportedResource = RE::GFxMovieDefImpl::ImportedResource;
 
@@ -139,24 +196,26 @@ void ImportData::ImportResources(const std::vector<IconInfo>& a_iconInfo)
 	std::uint16_t nextId = 0;
 	std::vector<ImportedResource> newResources;
 
-	for (std::size_t iconIndex = 0, size = a_iconInfo.size(); iconIndex < size; iconIndex++) {
-		auto& iconInfo = a_iconInfo[iconIndex];
-		auto& movie = _importedMovies.at(iconInfo.SourcePath);
-		std::uint32_t movieIndex = _movieIndices.at(iconInfo.SourcePath);
+	_ids[IconTypes::Discovered].resize(_numIcons);
+	_ids[IconTypes::Undiscovered].resize(_numIcons);
+
+	for (auto& [sourcePath, iconIds] : _importResources) {
+		auto& movie = _importedMovies.at(sourcePath);
+		std::uint32_t movieIndex = _movieIndices.at(sourcePath);
 
 		auto importInfo = new (allocator.Alloc(sizeof(RE::GFxImportNode))) RE::GFxImportNode{
-			.filename = iconInfo.SourcePath.data(),
+			.filename = sourcePath.data(),
 			.frame = static_cast<std::uint32_t>(loadTaskData->importFrames.GetSize()),
 			.movieIndex = movieIndex,
 		};
 
-		for (std::int32_t iconType = 0; iconType < IconTypes::Total; iconType++) {
+		for (auto& iconId : iconIds) {
 			RE::GFxResourceID resourceId;
 			do {
 				resourceId = RE::GFxResourceID{ ++nextId };
 			} while (resources.Find(resourceId) != resources.end());
 
-			_ids[iconType].push_back(nextId);
+			_ids[iconId.iconType][iconId.index] = nextId;
 
 			RE::GFxResourceSource resourceSource{};
 			resourceSource.type = RE::GFxResourceSource::kImported;
@@ -165,17 +224,19 @@ void ImportData::ImportResources(const std::vector<IconInfo>& a_iconInfo)
 			loadTaskData->importedResourceCount++;
 			loadTaskData->resources.Add(resourceId, resourceSource);
 
-			RE::GFxImportNode::ImportAssetInfo assetInfo{};
-			assetInfo.name =
-				iconType == IconTypes::Discovered ? iconInfo.ExportName
-				: iconInfo.ExportNameUndiscovered;
+			RE::GFxImportNode::ImportAssetInfo assetInfo{
+				.name = RE::GString{ iconId.exportName.data() },
+				.id = nextId,
+				.importIndex = resourceSource.data.importSource.index,
+			};
 
-			assetInfo.id = nextId;
-			assetInfo.importIndex = resourceSource.data.importSource.index;
 			importInfo->assets.PushBack(assetInfo);
-		}
 
-		_iconScales.push_back(iconInfo.IconScale);
+			ImportedResource importedResource{};
+			importedResource.importData = std::addressof(movie->bindTaskData->importData);
+			importedResource.resource = RE::GPtr(_icons[iconId.iconType][iconId.index]);
+			newResources.push_back(importedResource);
+		}
 
 		if (loadTaskData->importInfoBegin) {
 			auto& prev = loadTaskData->importInfoEnd;
@@ -186,13 +247,6 @@ void ImportData::ImportResources(const std::vector<IconInfo>& a_iconInfo)
 		}
 
 		loadTaskData->importInfoEnd = importInfo;
-
-		for (std::int32_t iconType = 0; iconType < IconTypes::Total; iconType++) {
-			ImportedResource importedResource{};
-			importedResource.importData = std::addressof(movie->bindTaskData->importData);
-			importedResource.resource = RE::GPtr(_icons[iconType][iconIndex]);
-			newResources.push_back(importedResource);
-		}
 	}
 
 	std::uint32_t newCount = (loadTaskData->importedResourceCount + 0xF) & -0x10;
@@ -201,12 +255,12 @@ void ImportData::ImportResources(const std::vector<IconInfo>& a_iconInfo)
 		std::size_t newSize = newCount * sizeof(ImportedResource);
 		auto newArray = new (importData.heap->Alloc(newSize, 0)) ImportedResource[newCount];
 
-		for (std::uint32_t i = 0; i < importData.importCount; i++) {
-			newArray[i] = importData.resourceArray[i];
-		}
+		std::copy_n(importData.resourceArray, importData.importCount, newArray);
+
 		for (std::uint32_t i = 0; i < importData.importCount; i++) {
 			importData.resourceArray[i].resource->Release();
 		}
+
 		importData.resourceArray = newArray;
 		importData.importCount = newCount;
 	}
@@ -214,9 +268,10 @@ void ImportData::ImportResources(const std::vector<IconInfo>& a_iconInfo)
 	std::uint32_t start =
 		loadTaskData->importedResourceCount - static_cast<std::uint32_t>(newResources.size());
 
-	for (int i = 0; i < newResources.size(); i++) {
-		importData.resourceArray[start + i] = newResources[i];
-	}
+	std::copy(
+		newResources.begin(),
+		newResources.end(),
+		std::addressof(importData.resourceArray[start]));
 }
 
 auto ImportData::MakeReplaceObject(AllocateCallback a_alloc, std::uint16_t a_characterId)

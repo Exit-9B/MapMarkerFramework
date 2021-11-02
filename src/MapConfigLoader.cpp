@@ -3,6 +3,7 @@
 #include "DiscoveryMusicManager.h"
 #include "FormUtil.h"
 #include "ImportManager.h"
+#include "Settings.h"
 #include <json/json.h>
 
 auto MapConfigLoader::GetSingleton() -> MapConfigLoader*
@@ -67,6 +68,10 @@ void MapConfigLoader::LoadFromFile(std::filesystem::path a_file)
 
 			if (!name.empty() && source.isObject()) {
 				auto path = source["path"].asString();
+
+				if (path.empty()) {
+					path = Settings::GetSingleton()->Resources.sResourceFile;
+				}
 
 				std::string exportName, exportNameUndiscovered;
 				auto& exportNames = source["exportNames"];

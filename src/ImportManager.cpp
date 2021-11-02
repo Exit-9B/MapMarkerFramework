@@ -1,5 +1,6 @@
 #include "ImportManager.h"
 #include "MapConfigLoader.h"
+#include "Settings.h"
 
 namespace chrono = std::chrono;
 
@@ -73,8 +74,10 @@ void ImportManager::SetupHUDMenu(RE::GFxMovieView* a_movieView)
 		insertPos--;
 	}
 
+	std::size_t iconCount = insertPos - locationMarkers + 1;
+
 	if (!_baseIndex) {
-		_baseIndex = static_cast<std::uint32_t>(insertPos - locationMarkers + 1);
+		_baseIndex = static_cast<std::uint32_t>(iconCount);
 		MapConfigLoader::GetSingleton()->UpdateMarkers(_baseIndex);
 	}
 
@@ -85,18 +88,24 @@ void ImportManager::SetupHUDMenu(RE::GFxMovieView* a_movieView)
 			MenuType::HUD,
 		};
 
-		importData.InsertCustomIcons(_customIcons, insertPos, undiscoveredOffset);
-
 		std::int32_t newFrames = static_cast<std::int32_t>(_customIcons.size());
+		std::int32_t undiscoveredMarkersNew = undiscoveredMarkers + newFrames;
+
+		importData.InsertCustomIcons(
+			_customIcons,
+			insertPos,
+			undiscoveredOffset,
+			iconCount);
+
 		*(compassMarker->frameLabels.Get("UndiscoveredMarkers")) += newFrames;
 
-		std::int32_t undiscoveredMarkersNew = undiscoveredMarkers + 1 + newFrames;
+		std::int32_t compassMarkerUndiscovered = undiscoveredMarkersNew + 1;
 
-		logger::trace("Updating CompassMarkerUndiscovered to {}"sv, undiscoveredMarkersNew);
+		logger::trace("Updating CompassMarkerUndiscovered to {}"sv, compassMarkerUndiscovered);
 
 		a_movieView->SetVariableDouble(
 			"HUDMovieBaseInstance.CompassMarkerUndiscovered",
-			undiscoveredMarkersNew);
+			compassMarkerUndiscovered);
 	}
 }
 
@@ -153,8 +162,10 @@ void ImportManager::SetupMapMenu(RE::GFxMovieView* a_movieView)
 		insertPos,
 		undiscoveredOffset);
 
+	std::size_t iconCount = insertPos;
+
 	if (insertPos != _baseIndex) {
-		logger::error("Map had {} icons, expected {}"sv, insertPos, _baseIndex);
+		logger::error("Map had {} icons, expected {}"sv, iconCount, _baseIndex);
 		return;
 	}
 
@@ -165,12 +176,16 @@ void ImportManager::SetupMapMenu(RE::GFxMovieView* a_movieView)
 			MenuType::Map,
 		};
 
-		importData.InsertCustomIcons(_customIcons, insertPos, undiscoveredOffset);
-
-		auto newFrames = static_cast<std::int32_t>(_customIcons.size());
-		*(mapMarker->frameLabels.Get("Undiscovered")) += newFrames;
-
+		std::int32_t newFrames = static_cast<std::int32_t>(_customIcons.size());
 		std::int32_t undiscoveredOffsetNew = undiscovered + newFrames;
+
+		importData.InsertCustomIcons(
+			_customIcons,
+			insertPos,
+			undiscoveredOffset,
+			iconCount);
+
+		*(mapMarker->frameLabels.Get("Undiscovered")) += newFrames;
 
 		logger::trace("Updating UNDISCOVERED_OFFSET to {}"sv, undiscoveredOffsetNew);
 
@@ -190,6 +205,20 @@ void ImportManager::SetupMapMenu(RE::GFxMovieView* a_movieView)
 				auto str = fmt::format("Marker{}"sv, i);
 				iconMap.PushBack(str.data());
 			}
+		}
+
+		auto settings = Settings::GetSingleton();
+		if (settings->Map.fMarkerScale != 1.0f) {
+
+			RE::GFxValue markerBaseSize;
+
+			a_movieView->GetVariable(
+				std::addressof(markerBaseSize),
+				"Map.MapMarker.MARKER_BASE_SIZE");
+
+			auto newSize = markerBaseSize.GetNumber() * settings->Map.fMarkerScale;
+
+			a_movieView->SetVariable("Map.MapMarker.MARKER_BASE_SIZE", newSize);
 		}
 	}
 }
