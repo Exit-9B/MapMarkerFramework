@@ -7,19 +7,23 @@ public:
 
 	void LoadSettings();
 
-	struct
+	struct MapSettings
 	{
 		bool bObscuredUndiscovered;
 		float fMarkerScale;
-	} Map;
+	};
 
-	struct
+	struct HUDSettings
 	{
 		bool bObscuredUndiscovered;
-	} HUD;
+	};
 
-	struct
+	struct ResourcesSettings
 	{
 		std::string sResourceFile;
-	} Resources;
+	};
+
+	MapSettings Map;
+	HUDSettings HUD;
+	ResourcesSettings Resources;
 };

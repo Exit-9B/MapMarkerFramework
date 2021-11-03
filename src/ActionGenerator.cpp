@@ -9,6 +9,7 @@ void ActionGenerator::Ready()
 
 auto ActionGenerator::GetCode() -> RE::GASActionBufferData*
 {
+	// SkyrimSE 1.5.97.0: 0x017BC3F0
 	static REL::Relocation<std::uintptr_t> GASActionBufferData_vtbl{ REL::ID(291566), 0x38 };
 
 	auto bufferData = static_cast<RE::GASActionBufferData*>(

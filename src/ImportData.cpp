@@ -1,5 +1,6 @@
 #include "ImportData.h"
 #include "ActionGenerator.h"
+#include "GFxUtil.h"
 #include "Settings.h"
 #include "TagFactory.h"
 
@@ -109,21 +110,15 @@ void ImportData::InsertCustomIcons(
 
 auto ImportData::LoadMovie(const std::string& a_sourcePath) -> RE::GFxMovieDefImpl*
 {
-	auto scaleformManager = RE::BSScaleformManager::GetSingleton();
-	auto loader = scaleformManager->loader;
+	const auto scaleformManager = RE::BSScaleformManager::GetSingleton();
+	const auto loader = scaleformManager->loader;
 	auto movieDef = loader->CreateMovie(a_sourcePath.data());
 	if (!movieDef) {
 		logger::error("Failed to create movie from {}"sv, a_sourcePath);
 		return nullptr;
 	}
 
-	static REL::Relocation<std::uintptr_t> GFxMovieDefImpl_vtbl{ REL::ID(562342), 0x4BF0 };
-	if (*reinterpret_cast<std::uintptr_t*>(movieDef) != GFxMovieDefImpl_vtbl.get()) {
-		logger::critical("Loaded movie did not have the expected virtual table, aborting"sv);
-		return nullptr;
-	}
-
-	auto movieDefImpl = static_cast<RE::GFxMovieDefImpl*>(movieDef);
+	auto movieDefImpl = GFxUtil::GetMovieDefImpl(movieDef);
 
 	_importedMovies[a_sourcePath] = movieDefImpl;
 
@@ -139,6 +134,9 @@ void ImportData::LoadIcons()
 
 	for (auto& [sourcePath, iconIds] : _importResources) {
 		auto& movie = _importedMovies.at(sourcePath);
+		if (!movie) {
+			continue;
+		}
 
 		for (auto& iconId : iconIds) {
 			auto icon = movie->GetResource(iconId.exportName.data());
@@ -204,6 +202,10 @@ void ImportData::ImportResources()
 
 	for (auto& [sourcePath, iconIds] : _importResources) {
 		auto& movie = _importedMovies.at(sourcePath);
+		if (!movie) {
+			continue;
+		}
+
 		std::uint32_t movieIndex = _movieIndices.at(sourcePath);
 
 		auto importInfo = new (allocator.Alloc(sizeof(RE::GFxImportNode))) RE::GFxImportNode{
@@ -261,8 +263,10 @@ void ImportData::ImportResources()
 		std::copy_n(importData.resourceArray, importData.importCount, newArray);
 
 		for (std::uint32_t i = 0; i < importData.importCount; i++) {
-			importData.resourceArray[i].resource->Release();
+			importData.resourceArray[i].~ImportedResource();
 		}
+
+		importData.heap->Free(importData.resourceArray);
 
 		importData.resourceArray = newArray;
 		importData.importCount = newCount;

@@ -1,5 +1,6 @@
 #include "ImportManager.h"
 #include "MapConfigLoader.h"
+#include "GFxUtil.h"
 #include "Settings.h"
 
 namespace chrono = std::chrono;
@@ -26,9 +27,11 @@ void ImportManager::InstallHooks()
 {
 	auto& trampoline = SKSE::GetTrampoline();
 
+	// SkyrimSE 1.5.97.0: 0x0087CECF
 	REL::Relocation<std::uintptr_t> hud_hook{ REL::ID(50716), 0xFF };
 	_LoadMovie = trampoline.write_call<5>(hud_hook.address(), LoadMovie);
 
+	// SkyrimSE 1.5.97.0: 0x008E36CF
 	REL::Relocation<std::uintptr_t> map_hook{ REL::ID(52206), 0x1CF };
 	trampoline.write_call<5>(map_hook.address(), LoadMovie);
 
@@ -64,8 +67,10 @@ void ImportManager::SetupHUDMenu(RE::GFxMovieView* a_movieView)
 	std::size_t undiscoveredOffset = static_cast<size_t>(undiscoveredMarkers) - locationMarkers;
 	std::size_t insertPos = static_cast<size_t>(undiscoveredMarkers) - 1;
 
-	// walk back until you find the RemoveObject frame
-	while (insertPos > locationMarkers + 66 && !compassMarker->frames[insertPos].data) {
+	// If using a modded HUD, walk back to find the RemoveObject frame
+	// Vanilla has 60-66 reserved
+	std::size_t reservedEnd = static_cast<size_t>(locationMarkers + 66);
+	while (insertPos > reservedEnd && !compassMarker->frames[insertPos].data) {
 		insertPos--;
 	}
 
@@ -78,14 +83,20 @@ void ImportManager::SetupHUDMenu(RE::GFxMovieView* a_movieView)
 
 	assert(iconCount >= 67);
 
+	// HUD should only load once, but guard here just in case
 	if (!_baseIndex) {
 		_baseIndex = static_cast<std::uint32_t>(iconCount);
 		MapConfigLoader::GetSingleton()->UpdateMarkers(_baseIndex);
 	}
 
+	auto movieDefImpl = GFxUtil::GetMovieDefImpl(movieDef);
+	if (!movieDefImpl) {
+		return;
+	}
+
 	if (!_customIcons.empty()) {
 		ImportData importData{
-			static_cast<RE::GFxMovieDefImpl*>(movieDef),
+			movieDefImpl,
 			compassMarker,
 			MenuType::HUD,
 		};
@@ -115,7 +126,7 @@ void ImportManager::SetupMapMenu(RE::GFxMovieView* a_movieView)
 {
 	assert(a_movieView);
 	auto movieDef = a_movieView->GetMovieDef();
-	class ImportVisitor : public RE::GFxMovieDef::ImportVisitor
+	class MarkerArtFinder : public RE::GFxMovieDef::ImportVisitor
 	{
 	public:
 		void Visit(
@@ -142,14 +153,14 @@ void ImportManager::SetupMapMenu(RE::GFxMovieView* a_movieView)
 		RE::GFxMovieDef* movieDef;
 		RE::GFxSpriteDef* mapMarker;
 	};
-	ImportVisitor visitor{};
-	movieDef->VisitImportedMovies(std::addressof(visitor));
+	MarkerArtFinder markerArtFinder{};
+	movieDef->VisitImportedMovies(std::addressof(markerArtFinder));
 
-	movieDef = visitor.movieDef;
-	auto mapMarker = visitor.mapMarker;
+	movieDef = markerArtFinder.movieDef;
+	auto mapMarker = markerArtFinder.mapMarker;
 
 	if (!mapMarker) {
-		logger::error("Could not get map marker sprite"sv);
+		logger::error("SkyUI Map is not installed, can't add map markers"sv);
 		return;
 	}
 
@@ -160,7 +171,7 @@ void ImportManager::SetupMapMenu(RE::GFxMovieView* a_movieView)
 	mapMarker->GetLabeledFrame("Undiscovered", undiscovered, false);
 
 	std::size_t undiscoveredOffset = static_cast<size_t>(undiscovered - discovered);
-	std::size_t insertPos = discovered + _baseIndex;
+	std::size_t insertPos = static_cast<size_t>(discovered + _baseIndex);
 
 	if (!_baseIndex) {
 		logger::critical("HUD didn't load correctly, can't load Map"sv);
@@ -172,9 +183,14 @@ void ImportManager::SetupMapMenu(RE::GFxMovieView* a_movieView)
 		insertPos,
 		undiscoveredOffset);
 
+	auto movieDefImpl = GFxUtil::GetMovieDefImpl(movieDef);
+	if (!movieDefImpl) {
+		return;
+	}
+
 	if (!_customIcons.empty()) {
 		ImportData importData{
-			static_cast<RE::GFxMovieDefImpl*>(movieDef),
+			movieDefImpl,
 			mapMarker,
 			MenuType::Map,
 		};
@@ -196,6 +212,14 @@ void ImportManager::SetupMapMenu(RE::GFxMovieView* a_movieView)
 			"Map.MapMarker.UNDISCOVERED_OFFSET",
 			static_cast<double>(undiscoveredOffsetNew));
 
+		auto typeRangeNew = _baseIndex + newFrames + 1;
+
+		logger::trace("Updating TYPE_RANGE to {}"sv, typeRangeNew);
+
+		a_movieView->SetVariableDouble(
+			"Map.LocationFinder.TYPE_RANGE",
+			static_cast<double>(typeRangeNew));
+
 		RE::GFxValue iconMap;
 		a_movieView->GetVariable(std::addressof(iconMap), "Map.MapMarker.ICON_MAP");
 		if (iconMap.IsArray()) {
@@ -205,9 +229,13 @@ void ImportManager::SetupMapMenu(RE::GFxMovieView* a_movieView)
 				_customIcons.size());
 
 			for (std::size_t i = 0, size = _customIcons.size(); i < size; i++) {
+				// icon names are arbitrary, just make sure they're not recognized by the script
 				auto str = fmt::format("Marker{}"sv, i);
 				iconMap.PushBack(str.data());
 			}
+		}
+		else {
+			logger::error("ICON_MAP was missing or not an array, failed to update"sv);
 		}
 
 		auto settings = Settings::GetSingleton();
@@ -221,6 +249,7 @@ void ImportManager::SetupMapMenu(RE::GFxMovieView* a_movieView)
 
 			auto newSize = markerBaseSize.GetNumber() * settings->Map.fMarkerScale;
 
+			logger::trace("Updating MARKER_BASE_SIZE to {}"sv, typeRangeNew);
 			a_movieView->SetVariable("Map.MapMarker.MARKER_BASE_SIZE", newSize);
 		}
 	}
@@ -256,7 +285,7 @@ bool ImportManager::LoadMovie(
 		auto endTime = chrono::steady_clock::now();
 		auto elapsedMs = chrono::duration_cast<chrono::milliseconds>(endTime - startTime);
 
-		logger::info("Injected custom icons into {} in {} ms"sv, a_menuName, elapsedMs.count());
+		logger::info("Set up {} in {} ms"sv, a_menuName, elapsedMs.count());
 	}
 
 	return result;

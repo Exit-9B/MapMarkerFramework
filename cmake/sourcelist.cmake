@@ -5,6 +5,8 @@ set(SOURCES ${SOURCES}
     src/DiscoveryMusicManager.h
     src/FormUtil.cpp
     src/FormUtil.h
+    src/GFxUtil.cpp
+    src/GFxUtil.h
     src/Hooks.cpp
     src/Hooks.h
     src/ImportData.cpp

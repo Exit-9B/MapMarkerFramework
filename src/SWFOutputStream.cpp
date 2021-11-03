@@ -1,5 +1,4 @@
 #include "SWFOutputStream.h"
-#include <algorithm>
 
 void SWFOutputStream::Write(std::uint8_t a_byte)
 {

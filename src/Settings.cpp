@@ -11,7 +11,9 @@ void Settings::LoadSettings()
 {
 	CSimpleIniA ini;
 	ini.SetUnicode();
-	ini.LoadFile(R"(.\Data\SKSE\Plugins\MapMarkerFramework.ini)");
+
+	auto iniPath = fmt::format(R"(.\Data\SKSE\Plugins\{}.ini)"sv, Version::PROJECT);
+	ini.LoadFile(iniPath.data());
 
 	Map.bObscuredUndiscovered = ini.GetBoolValue("Map", "bObscuredUndiscovered", false);
 	Map.fMarkerScale = static_cast<float>(ini.GetDoubleValue("Map", "fMarkerScale", 1.0));
