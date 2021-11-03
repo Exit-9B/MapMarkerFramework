@@ -1,27 +1,27 @@
 set(SOURCES ${SOURCES}
+    include/ActionGenerator.h
+    include/DiscoveryMusicManager.h
+    include/FormUtil.h
+    include/GFxUtil.h
+    include/Hooks.h
+    include/ImportData.h
+    include/ImportManager.h
+    include/MapConfigLoader.h
+    include/PCH.h
+    include/SWFOutputStream.h
+    include/Settings.h
+    include/TagFactory.h
     src/ActionGenerator.cpp
-    src/ActionGenerator.h
     src/DiscoveryMusicManager.cpp
-    src/DiscoveryMusicManager.h
     src/FormUtil.cpp
-    src/FormUtil.h
     src/GFxUtil.cpp
-    src/GFxUtil.h
     src/Hooks.cpp
-    src/Hooks.h
     src/ImportData.cpp
-    src/ImportData.h
     src/ImportManager.cpp
-    src/ImportManager.h
     src/MapConfigLoader.cpp
-    src/MapConfigLoader.h
     src/PCH.cpp
-    src/PCH.h
     src/SWFOutputStream.cpp
-    src/SWFOutputStream.h
     src/Settings.cpp
-    src/Settings.h
     src/TagFactory.cpp
-    src/TagFactory.h
     src/main.cpp
 )
