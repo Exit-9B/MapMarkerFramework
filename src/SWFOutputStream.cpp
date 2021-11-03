@@ -245,6 +245,14 @@ void SWFOutputStream::WriteFILTER(const Filter& a_value)
 	using FilterMode = RE::GRenderer::FilterModes;
 	FilterType filterType = static_cast<FilterType>(a_value.filterType.underlying() & 0xF);
 
+	bool knockOut =
+		a_value.filterType.all(FilterType::kFlag_KnockOut) ||
+		a_value.filterParams.mode.all(FilterMode::Filter_Knockout);
+
+	bool compositeSource =
+		a_value.filterType.none(FilterType::kFlag_HideObject) &&
+		a_value.filterParams.mode.none(FilterMode::Filter_HideObject);
+
 	switch (filterType) {
 	case FilterType::kDropShadow:
 		WriteRGBA(a_value.filterParams.color);
@@ -254,8 +262,8 @@ void SWFOutputStream::WriteFILTER(const Filter& a_value)
 		WriteFIXED(a_value.distance);
 		WriteFIXED8(a_value.filterParams.strength);
 		WriteUB(1, a_value.filterParams.mode.all(FilterMode::Filter_Inner));
-		WriteUB(1, a_value.filterType.all(FilterType::kFlag_KnockOut));
-		WriteUB(1, a_value.filterType.none(FilterType::kFlag_HideObject));
+		WriteUB(1, knockOut);
+		WriteUB(1, compositeSource);
 		WriteUB(5, a_value.filterParams.passes);
 		break;
 	case FilterType::kBlur:
@@ -270,8 +278,8 @@ void SWFOutputStream::WriteFILTER(const Filter& a_value)
 		WriteFIXED(a_value.filterParams.blurY);
 		WriteFIXED8(a_value.filterParams.strength);
 		WriteUB(1, a_value.filterParams.mode.all(FilterMode::Filter_Inner));
-		WriteUB(1, a_value.filterType.all(FilterType::kFlag_KnockOut));
-		WriteUB(1, a_value.filterType.none(FilterType::kFlag_HideObject));
+		WriteUB(1, knockOut);
+		WriteUB(1, compositeSource);
 		WriteUB(5, a_value.filterParams.passes);
 		break;
 	case FilterType::kBevel:
@@ -283,8 +291,8 @@ void SWFOutputStream::WriteFILTER(const Filter& a_value)
 		WriteFIXED(a_value.distance);
 		WriteFIXED8(a_value.filterParams.strength);
 		WriteUB(1, a_value.filterParams.mode.all(FilterMode::Filter_Inner));
-		WriteUB(1, a_value.filterType.all(FilterType::kFlag_KnockOut));
-		WriteUB(1, a_value.filterType.none(FilterType::kFlag_HideObject));
+		WriteUB(1, knockOut);
+		WriteUB(1, compositeSource);
 		WriteUB(1, 0);
 		WriteUB(4, a_value.filterParams.passes);
 		break;
