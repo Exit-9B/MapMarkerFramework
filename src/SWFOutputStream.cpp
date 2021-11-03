@@ -58,7 +58,7 @@ void SWFOutputStream::WriteUI32(std::uint32_t a_value)
 	Write((a_value >> 24) & 0xFF);
 }
 
-void SWFOutputStream::WriteUI64(std::uint64_t a_value)
+void SWFOutputStream::WriteLong(std::uint64_t a_value)
 {
 	Write((a_value >> 32) & 0xFF);
 	Write((a_value >> 40) & 0xFF);
@@ -104,7 +104,25 @@ void SWFOutputStream::WriteDOUBLE(double a_value)
 
 	DoubleToInt cv{ .value = a_value };
 
-	WriteUI64(cv.intBits);
+	WriteLong(cv.intBits);
+}
+
+void SWFOutputStream::WriteSTRING(const char* a_value)
+{
+	if (!a_value) {
+		return;
+	}
+
+	Write(std::string(a_value));
+	Write(0);
+}
+
+void SWFOutputStream::WriteRGBA(RE::GColor a_value)
+{
+	WriteUI8(a_value.colorData.channels.red);
+	WriteUI8(a_value.colorData.channels.green);
+	WriteUI8(a_value.colorData.channels.blue);
+	WriteUI8(a_value.colorData.channels.alpha);
 }
 
 void SWFOutputStream::WriteMATRIX(const RE::GMatrix2D& a_value)
@@ -213,16 +231,6 @@ void SWFOutputStream::WriteCXFORMWITHALPHA(const RE::GRenderer::Cxform& a_value)
 	AlignByte();
 }
 
-void SWFOutputStream::WriteSTRING(const char* a_value)
-{
-	if (!a_value) {
-		return;
-	}
-
-	Write(std::string(a_value));
-	Write(0);
-}
-
 void SWFOutputStream::WriteFILTERLIST(const RE::GArray<Filter>& a_value)
 {
 	assert(a_value.GetSize() <= 255);
@@ -234,24 +242,65 @@ void SWFOutputStream::WriteFILTERLIST(const RE::GArray<Filter>& a_value)
 
 void SWFOutputStream::WriteFILTER(const Filter& a_value)
 {
+	using FilterMode = RE::GRenderer::FilterModes;
 	FilterType filterType = static_cast<FilterType>(a_value.filterType.underlying() & 0xF);
 
 	switch (filterType) {
 	case FilterType::kDropShadow:
+		WriteRGBA(a_value.filterParams.color);
+		WriteFIXED(a_value.filterParams.blurX);
+		WriteFIXED(a_value.filterParams.blurY);
+		WriteFIXED(a_value.angle);
+		WriteFIXED(a_value.distance);
+		WriteFIXED8(a_value.filterParams.strength);
+		WriteUB(1, a_value.filterParams.mode.all(FilterMode::Filter_Inner));
+		WriteUB(1, a_value.filterType.all(FilterType::kFlag_KnockOut));
+		WriteUB(1, a_value.filterType.none(FilterType::kFlag_HideObject));
+		WriteUB(5, a_value.filterParams.passes);
 		break;
 	case FilterType::kBlur:
+		WriteFIXED(a_value.filterParams.blurX);
+		WriteFIXED(a_value.filterParams.blurY);
+		WriteUB(5, a_value.filterParams.passes);
+		WriteUB(3, 0);
 		break;
 	case FilterType::kGlow:
+		WriteRGBA(a_value.filterParams.color);
+		WriteFIXED(a_value.filterParams.blurX);
+		WriteFIXED(a_value.filterParams.blurY);
+		WriteFIXED8(a_value.filterParams.strength);
+		WriteUB(1, a_value.filterParams.mode.all(FilterMode::Filter_Inner));
+		WriteUB(1, a_value.filterType.all(FilterType::kFlag_KnockOut));
+		WriteUB(1, a_value.filterType.none(FilterType::kFlag_HideObject));
+		WriteUB(5, a_value.filterParams.passes);
 		break;
 	case FilterType::kBevel:
+		WriteRGBA(a_value.filterParams.color);
+		WriteRGBA(a_value.filterParams.color2);
+		WriteFIXED(a_value.filterParams.blurX);
+		WriteFIXED(a_value.filterParams.blurY);
+		WriteFIXED(a_value.angle);
+		WriteFIXED(a_value.distance);
+		WriteFIXED8(a_value.filterParams.strength);
+		WriteUB(1, a_value.filterParams.mode.all(FilterMode::Filter_Inner));
+		WriteUB(1, a_value.filterType.all(FilterType::kFlag_KnockOut));
+		WriteUB(1, a_value.filterType.none(FilterType::kFlag_HideObject));
+		WriteUB(1, 0);
+		WriteUB(4, a_value.filterParams.passes);
 		break;
 	case FilterType::kGradientGlow:
+		// not supported
 		break;
 	case FilterType::kConvolution:
+		// not supported
 		break;
 	case FilterType::kAdjustColor:
+		for (std::int32_t i = 0; i < 20; i++) {
+			WriteFLOAT(a_value.colorMatrix[i]);
+		}
 		break;
 	case FilterType::kGradientBevel:
+		// not supported
 		break;
 	}
 }
