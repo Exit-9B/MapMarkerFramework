@@ -39,7 +39,7 @@ void ActionGenerator::FlushConstantPool()
 		std::uint16_t count = static_cast<std::uint16_t>(_constantPool.size());
 
 		for (auto& [value, _] : _constantPool) {
-			size += static_cast<std::uint16_t>(value.length() + 1);
+			size += static_cast<std::int16_t>(value.length() + 1);
 		}
 
 		_committed.WriteUI8(0x88);
@@ -50,11 +50,41 @@ void ActionGenerator::FlushConstantPool()
 			_committed.WriteSTRING(value.data());
 		}
 
+		_pos += 5 + size;
+
 		_constantPool.clear();
 	}
 
 	_committed.Write(_temporary.Get());
 	_temporary.Clear();
+}
+
+// Stack operations
+
+void ActionGenerator::Push([[maybe_unused]] std::nullptr_t a_value)
+{
+	_temporary.WriteUI8(0x96);
+	_temporary.WriteUI16(1);
+	_temporary.WriteUI8(2);
+	_pos += 4;
+}
+
+void ActionGenerator::Push(float a_value)
+{
+	_temporary.WriteUI8(0x96);
+	_temporary.WriteUI16(5);
+	_temporary.WriteUI8(1);
+	_temporary.WriteFLOAT(a_value);
+	_pos += 8;
+}
+
+void ActionGenerator::Push(double a_value)
+{
+	_temporary.WriteUI8(0x96);
+	_temporary.WriteUI16(9);
+	_temporary.WriteUI8(6);
+	_temporary.WriteDOUBLE(a_value);
+	_pos += 12;
 }
 
 void ActionGenerator::Push(const std::string& a_value, bool a_useConstantPool)
@@ -76,12 +106,14 @@ void ActionGenerator::Push(const std::string& a_value, bool a_useConstantPool)
 			_temporary.WriteUI16(2);
 			_temporary.WriteUI8(8);
 			_temporary.WriteUI8(registerNum & 0xFF);
+			_pos += 5;
 		}
 		else {
 			_temporary.WriteUI8(0x96);
 			_temporary.WriteUI16(2);
 			_temporary.WriteUI8(9);
 			_temporary.WriteUI16(registerNum);
+			_pos += 6;
 		}
 	}
 	else {
@@ -89,47 +121,65 @@ void ActionGenerator::Push(const std::string& a_value, bool a_useConstantPool)
 		_temporary.WriteUI16(2);
 		_temporary.WriteUI8(0);
 		_temporary.WriteSTRING(a_value.data());
+		_pos += 4 + static_cast<std::int16_t>(a_value.length()) + 1;
 	}
 }
 
-// Stack operations
-
-void ActionGenerator::Push(float a_value)
-{
-	_temporary.WriteUI8(0x96);
-	_temporary.WriteUI16(5);
-	_temporary.WriteUI8(1);
-	_temporary.WriteFLOAT(a_value);
-}
-
-void ActionGenerator::Push(double a_value)
-{
-	_temporary.WriteUI8(0x96);
-	_temporary.WriteUI16(9);
-	_temporary.WriteUI8(6);
-	_temporary.WriteDOUBLE(a_value);
-}
-
-// Math actions
+// Arithmetic operators
 
 void ActionGenerator::Add()
 {
 	_temporary.WriteUI8(0x0A);
+	_pos += 1;
 }
 
 void ActionGenerator::Subtract()
 {
 	_temporary.WriteUI8(0x0B);
+	_pos += 1;
 }
 
 void ActionGenerator::Multiply()
 {
 	_temporary.WriteUI8(0x0C);
+	_pos += 1;
 }
 
 void ActionGenerator::Divide()
 {
 	_temporary.WriteUI8(0x0D);
+	_pos += 1;
+}
+
+// Numerical comparison
+
+void ActionGenerator::Equals2()
+{
+	_temporary.WriteUI8(0x49);
+	_pos += 1;
+}
+
+// Logical operators
+
+void ActionGenerator::Not()
+{
+	_temporary.WriteUI8(0x12);
+	_pos += 1;
+}
+
+// Control flow
+void ActionGenerator::If(Label& a_label)
+{
+	_temporary.WriteUI8(0x9D);
+	_temporary.WriteUI16(2);
+	_temporary.WriteSI16(a_label.loc - (_pos + 5));
+	_pos += 5;
+}
+
+void ActionGenerator::L([[maybe_unused]] Label& a_label)
+{
+	[[maybe_unused]] std::int16_t constantPoolSize = GetConstantPoolSize();
+	assert(constantPoolSize + _pos == a_label.loc);
 }
 
 // Variables
@@ -137,11 +187,13 @@ void ActionGenerator::Divide()
 void ActionGenerator::GetVariable()
 {
 	_temporary.WriteUI8(0x1C);
+	_pos += 1;
 }
 
 void ActionGenerator::SetVariable()
 {
 	_temporary.WriteUI8(0x1D);
+	_pos += 1;
 }
 
 // Script Object actions
@@ -149,14 +201,39 @@ void ActionGenerator::SetVariable()
 void ActionGenerator::DefineLocal()
 {
 	_temporary.WriteUI8(0x3C);
+	_pos += 1;
 }
 
 void ActionGenerator::GetMember()
 {
 	_temporary.WriteUI8(0x4E);
+	_pos += 1;
 }
 
 void ActionGenerator::SetMember()
 {
 	_temporary.WriteUI8(0x4F);
+	_pos += 1;
+}
+
+// Other
+
+void ActionGenerator::InstanceOf()
+{
+	_temporary.WriteUI8(0x54);
+	_pos += 1;
+}
+
+auto ActionGenerator::GetConstantPoolSize() -> std::int16_t
+{
+	if (_constantPool.empty()) {
+		return 0;
+	}
+
+	std::int16_t size = 5;
+	for (auto& [str, _] : _constantPool) {
+		size += static_cast<std::int16_t>(str.length()) + 1;
+	}
+
+	return size;
 }

@@ -303,12 +303,30 @@ auto ImportData::MakeMarkerScaleAction(AllocateCallback a_alloc, float a_iconSca
 	{
 		Action(float a_iconScale)
 		{
-			// var marker = this._parent._parent._parent;
-			Push("marker");
+			Label endLbl(0xCD);
+
+			// var iconHolder = this._parent;
+			Push("iconHolder");
 			Push("this");
 			GetVariable();
 			Push("_parent");
 			GetMember();
+			DefineLocal();
+
+			// if (iconHolder != null)
+			Push("iconHolder");
+			GetVariable();
+			Push("Map");
+			GetVariable();
+			Push("LocationListEntry");
+			GetMember();
+			InstanceOf();
+			If(endLbl);
+
+			// var marker = iconHolder._parent._parent;
+			Push("marker");
+			Push("iconHolder");
+			GetVariable();
 			Push("_parent");
 			GetMember();
 			Push("_parent");
@@ -338,6 +356,9 @@ auto ImportData::MakeMarkerScaleAction(AllocateCallback a_alloc, float a_iconSca
 			Push(a_iconScale);
 			Multiply();
 			SetMember();
+
+			// endLbl:
+			L(endLbl);
 		}
 	};
 	Action action{ a_iconScale };

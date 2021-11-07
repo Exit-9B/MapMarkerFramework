@@ -38,6 +38,11 @@ void SWFOutputStream::WriteFB(std::int32_t a_nBits, float a_value)
 	WriteSB(a_nBits, static_cast<std::int64_t>(a_value * (1 << 16)));
 }
 
+void SWFOutputStream::WriteSI16(std::int16_t a_value)
+{
+	WriteUI16(static_cast<std::uint16_t>(a_value));
+}
+
 void SWFOutputStream::WriteUI8(std::uint8_t a_value)
 {
 	Write(a_value);
