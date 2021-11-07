@@ -61,8 +61,8 @@ protected:
 
 private:
 	auto GetConstantPoolSize() -> std::int16_t;
+	auto GetPos() -> std::int16_t;
 
-	std::int16_t _pos = 0;
 	SWFOutputStream _committed;
 	SWFOutputStream _temporary;
 	tsl::ordered_map<std::string, std::uint16_t> _constantPool;

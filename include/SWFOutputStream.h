@@ -29,6 +29,7 @@ public:
 	void WriteFILTER(const Filter& a_value);
 
 	auto Get() -> std::string_view;
+	auto GetPos() -> std::int64_t;
 	void Clear();
 
 private:

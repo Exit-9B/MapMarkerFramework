@@ -323,6 +323,11 @@ auto SWFOutputStream::Get() -> std::string_view
 	return _os.view();
 }
 
+auto SWFOutputStream::GetPos() -> std::int64_t
+{
+	return _pos;
+}
+
 void SWFOutputStream::Clear()
 {
 	_os.str(""s);

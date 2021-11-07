@@ -303,35 +303,30 @@ auto ImportData::MakeMarkerScaleAction(AllocateCallback a_alloc, float a_iconSca
 	{
 		Action(float a_iconScale)
 		{
-			Label endLbl(0xCD);
+			Label endLbl(0xAF);
 
-			// var iconHolder = this._parent;
-			Push("iconHolder");
+			// var marker = this._parent._parent._parent;
+			Push("marker");
 			Push("this");
 			GetVariable();
 			Push("_parent");
 			GetMember();
+			Push("_parent");
+			GetMember();
+			Push("_parent");
+			GetMember();
 			DefineLocal();
 
-			// if (iconHolder != null)
-			Push("iconHolder");
+			// if (marker instanceof Map.MapMarker)
+			Push("marker");
 			GetVariable();
 			Push("Map");
 			GetVariable();
-			Push("LocationListEntry");
+			Push("MapMarker");
 			GetMember();
 			InstanceOf();
+			Not();
 			If(endLbl);
-
-			// var marker = iconHolder._parent._parent;
-			Push("marker");
-			Push("iconHolder");
-			GetVariable();
-			Push("_parent");
-			GetMember();
-			Push("_parent");
-			GetMember();
-			DefineLocal();
 
 			// marker._width *= a_iconScale;
 			Push("marker");
