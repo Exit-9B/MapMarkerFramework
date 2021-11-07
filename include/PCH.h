@@ -2,6 +2,8 @@
 
 #include "RE/Skyrim.h"
 #include "SKSE/SKSE.h"
+#include <unordered_set>
+#include <tsl/ordered_map.h>
 
 #pragma warning(push)
 #ifdef NDEBUG

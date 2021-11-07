@@ -2,9 +2,22 @@
 
 void ActionGenerator::Ready()
 {
+	_undefinedLabels.clear();
+
+	std::int16_t constantPoolSize = _constantPoolSize;
 	FlushConstantPool();
 
 	_committed.Write(0);
+
+	auto view = _committed.Get();
+	_code.resize(view.size());
+	std::memcpy(_code.data(), view.data(), view.size());
+
+	for (auto& [writePos, offset] : _definedLabels) {
+		std::int16_t pos = writePos + constantPoolSize;
+		_code[pos] = offset & 0xFF;
+		_code[pos + 1] = (offset >> 8) & 0xFF;
+	}
 }
 
 auto ActionGenerator::GetCode() -> RE::GASActionBufferData*
@@ -19,12 +32,10 @@ auto ActionGenerator::GetCode() -> RE::GASActionBufferData*
 
 	*reinterpret_cast<std::uintptr_t*>(bufferData) = GASActionBufferData_vtbl.get();
 
-	auto code = _committed.Get();
-
-	auto buffer = RE::GMemory::AllocAutoHeap(bufferData, code.size());
-	memcpy(buffer, code.data(), code.size());
+	auto buffer = RE::GMemory::AllocAutoHeap(bufferData, _code.size());
+	memcpy(buffer, _code.data(), _code.size());
 	bufferData->buffer = buffer;
-	bufferData->size = code.size();
+	bufferData->size = _code.size();
 
 	bufferData->unk20 = 0;
 
@@ -35,15 +46,11 @@ void ActionGenerator::FlushConstantPool()
 {
 	if (!_constantPool.empty()) {
 
-		std::uint16_t size = 0;
+		std::uint16_t size = _constantPoolSize - 3;
 		std::uint16_t count = static_cast<std::uint16_t>(_constantPool.size());
 
-		for (auto& [value, _] : _constantPool) {
-			size += static_cast<std::int16_t>(value.length() + 1);
-		}
-
 		_committed.WriteUI8(0x88);
-		_committed.WriteUI16(2 + size);
+		_committed.WriteUI16(size);
 		_committed.WriteUI16(count);
 
 		for (auto& [value, _] : _constantPool) {
@@ -51,6 +58,7 @@ void ActionGenerator::FlushConstantPool()
 		}
 
 		_constantPool.clear();
+		_constantPoolSize = 0;
 	}
 
 	_committed.Write(_temporary.Get());
@@ -92,8 +100,13 @@ void ActionGenerator::Push(const std::string& a_value, bool a_useConstantPool)
 			registerNum = item->second;
 		}
 		else {
+			if (_constantPool.empty()) {
+				_constantPoolSize += 5;
+			}
+
 			registerNum = static_cast<std::uint16_t>(_constantPool.size());
 			_constantPool[a_value] = registerNum;
+			_constantPoolSize += static_cast<std::uint16_t>(a_value.length() + 1);
 		}
 
 		if (registerNum < 0x100) {
@@ -154,19 +167,33 @@ void ActionGenerator::Not()
 }
 
 // Control flow
+
 void ActionGenerator::If(Label& a_label)
 {
-	std::int16_t pos = GetPos() + 5;
+	std::int16_t programCounter = GetPos() + 5;
 
 	_temporary.WriteUI8(0x9D);
 	_temporary.WriteUI16(2);
-	_temporary.WriteSI16(a_label.loc - pos);
+
+	if (!a_label.defined) {
+		std::int16_t writePos = GetPos();
+		AddUndefinedLabel(a_label, writePos, programCounter);
+	}
+
+	_temporary.WriteSI16(a_label.loc - programCounter);
 }
 
 void ActionGenerator::L([[maybe_unused]] Label& a_label)
 {
-	[[maybe_unused]] std::int16_t pos = GetPos();
-	assert(pos == a_label.loc);
+	a_label.defined = true;
+	a_label.loc = GetPos();
+
+	auto [begin, end] = _undefinedLabels.equal_range(std::addressof(a_label));
+	for (auto it = begin; it != end; ++it) {
+		auto& labelRef = it->second;
+		std::int16_t offset = a_label.loc - labelRef.programCounter;
+		_definedLabels[labelRef.writePos] = offset;
+	}
 }
 
 // Variables
@@ -221,9 +248,23 @@ auto ActionGenerator::GetConstantPoolSize() -> std::int16_t
 
 auto ActionGenerator::GetPos() -> std::int16_t
 {
-	std::int16_t constantPoolSize = GetConstantPoolSize();
 	std::int16_t committedPos = static_cast<std::int16_t>(_committed.GetPos());
 	std::int16_t tempPos = static_cast<std::int16_t>(_temporary.GetPos());
 
-	return constantPoolSize + committedPos + tempPos;
+	return committedPos + tempPos;
+}
+
+void ActionGenerator::AddUndefinedLabel(
+	Label& a_label,
+	std::int16_t a_writePos,
+	std::int16_t a_programPos)
+{
+	_undefinedLabels.insert(
+		{
+			std::addressof(a_label),
+			LabelRef{
+				a_writePos,
+				a_programPos,
+			}
+		});
 }

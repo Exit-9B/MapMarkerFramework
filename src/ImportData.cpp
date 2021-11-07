@@ -303,7 +303,7 @@ auto ImportData::MakeMarkerScaleAction(AllocateCallback a_alloc, float a_iconSca
 	{
 		Action(float a_iconScale)
 		{
-			Label endLbl(0xAF);
+			Label endLbl;
 
 			// var marker = this._parent._parent._parent;
 			Push("marker");

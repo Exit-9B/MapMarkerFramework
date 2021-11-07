@@ -1,7 +1,6 @@
 #pragma once
 
 #include "SWFOutputStream.h"
-#include <tsl/ordered_map.h>
 
 class ActionGenerator
 {
@@ -12,10 +11,9 @@ public:
 protected:
 	struct Label
 	{
-		std::int16_t loc;
+		bool defined = false;
+		std::int16_t loc = 0;
 	};
-
-	void FlushConstantPool();
 
 	// Stack operations
 
@@ -60,10 +58,28 @@ protected:
 	void InstanceOf();
 
 private:
+	struct LabelRef
+	{
+		std::int16_t writePos;
+		std::int16_t programCounter;
+	};
+
+	// Note: currently private because it could break labels
+	void FlushConstantPool();
+
 	auto GetConstantPoolSize() -> std::int16_t;
+
 	auto GetPos() -> std::int16_t;
 
+	void AddUndefinedLabel(Label& a_label, std::int16_t a_writePos, std::int16_t a_programPos);
+
+	std::vector<std::uint8_t> _code;
 	SWFOutputStream _committed;
 	SWFOutputStream _temporary;
+
 	tsl::ordered_map<std::string, std::uint16_t> _constantPool;
+	std::int16_t _constantPoolSize = 0;
+
+	std::unordered_multimap<Label*, LabelRef> _undefinedLabels;
+	std::unordered_map<std::int16_t, std::int16_t> _definedLabels;
 };
