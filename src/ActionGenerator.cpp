@@ -10,36 +10,40 @@ void ActionGenerator::Ready()
 	_committed.Write(0);
 
 	auto view = _committed.Get();
-	_code.resize(view.size());
-	std::memcpy(_code.data(), view.data(), view.size());
+	auto code = InitBuffer(view.size());
+	std::memcpy(code, view.data(), view.size());
 
 	for (auto& [writePos, offset] : _definedLabels) {
 		std::int16_t pos = writePos + constantPoolSize;
-		_code[pos] = offset & 0xFF;
-		_code[pos + 1] = (offset >> 8) & 0xFF;
+		code[pos] = offset & 0xFF;
+		code[pos + 1] = (offset >> 8) & 0xFF;
 	}
 }
 
 auto ActionGenerator::GetCode() -> RE::GASActionBufferData*
 {
+	return _bufferData;
+}
+
+auto ActionGenerator::InitBuffer(std::size_t a_size) -> std::uint8_t*
+{
 	// SkyrimSE 1.5.97.0: 0x017BC3F0
 	static REL::Relocation<std::uintptr_t> GASActionBufferData_vtbl{ REL::ID(291566), 0x38 };
 
-	auto bufferData = static_cast<RE::GASActionBufferData*>(
+	_bufferData = static_cast<RE::GASActionBufferData*>(
 		RE::GMemory::Alloc(sizeof(RE::GASActionBufferData)));
 
-	std::memset(bufferData, 0, sizeof(RE::GASActionBufferData));
+	std::memset(_bufferData, 0, sizeof(RE::GASActionBufferData));
 
-	*reinterpret_cast<std::uintptr_t*>(bufferData) = GASActionBufferData_vtbl.get();
+	*reinterpret_cast<std::uintptr_t*>(_bufferData) = GASActionBufferData_vtbl.get();
 
-	auto buffer = RE::GMemory::AllocAutoHeap(bufferData, _code.size());
-	memcpy(buffer, _code.data(), _code.size());
-	bufferData->buffer = buffer;
-	bufferData->size = _code.size();
+	auto buffer = RE::GMemory::AllocAutoHeap(_bufferData, a_size);
 
-	bufferData->unk20 = 0;
+	_bufferData->buffer = buffer;
+	_bufferData->size = a_size;
+	_bufferData->unk20 = 0;
 
-	return bufferData;
+	return static_cast<std::uint8_t*>(buffer);
 }
 
 void ActionGenerator::FlushConstantPool()
