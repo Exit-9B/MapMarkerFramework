@@ -25,27 +25,6 @@ auto ActionGenerator::GetCode() -> RE::GASActionBufferData*
 	return _bufferData;
 }
 
-auto ActionGenerator::InitBuffer(std::size_t a_size) -> std::uint8_t*
-{
-	// SkyrimSE 1.5.97.0: 0x017BC3F0
-	static REL::Relocation<std::uintptr_t> GASActionBufferData_vtbl{ REL::ID(291566), 0x38 };
-
-	_bufferData = static_cast<RE::GASActionBufferData*>(
-		RE::GMemory::Alloc(sizeof(RE::GASActionBufferData)));
-
-	std::memset(_bufferData, 0, sizeof(RE::GASActionBufferData));
-
-	*reinterpret_cast<std::uintptr_t*>(_bufferData) = GASActionBufferData_vtbl.get();
-
-	auto buffer = RE::GMemory::AllocAutoHeap(_bufferData, a_size);
-
-	_bufferData->buffer = buffer;
-	_bufferData->size = a_size;
-	_bufferData->unk20 = 0;
-
-	return static_cast<std::uint8_t*>(buffer);
-}
-
 void ActionGenerator::FlushConstantPool()
 {
 	if (!_constantPool.empty()) {
@@ -236,20 +215,6 @@ void ActionGenerator::InstanceOf()
 	_temporary.WriteUI8(0x54);
 }
 
-auto ActionGenerator::GetConstantPoolSize() -> std::int16_t
-{
-	if (_constantPool.empty()) {
-		return 0;
-	}
-
-	std::int16_t size = 5;
-	for (auto& [str, _] : _constantPool) {
-		size += static_cast<std::int16_t>(str.length()) + 1;
-	}
-
-	return size;
-}
-
 auto ActionGenerator::GetPos() -> std::int16_t
 {
 	std::int16_t committedPos = static_cast<std::int16_t>(_committed.GetPos());
@@ -271,4 +236,25 @@ void ActionGenerator::AddUndefinedLabel(
 				a_programPos,
 			}
 		});
+}
+
+auto ActionGenerator::InitBuffer(std::size_t a_size) -> std::uint8_t*
+{
+	// SkyrimSE 1.5.97.0: 0x017BC3F0
+	static REL::Relocation<std::uintptr_t> GASActionBufferData_vtbl{ REL::ID(291566), 0x38 };
+
+	_bufferData = static_cast<RE::GASActionBufferData*>(
+		RE::GMemory::Alloc(sizeof(RE::GASActionBufferData)));
+
+	std::memset(_bufferData, 0, sizeof(RE::GASActionBufferData));
+
+	*reinterpret_cast<std::uintptr_t*>(_bufferData) = GASActionBufferData_vtbl.get();
+
+	auto buffer = RE::GMemory::AllocAutoHeap(_bufferData, a_size);
+
+	_bufferData->buffer = buffer;
+	_bufferData->size = a_size;
+	_bufferData->unk20 = 0;
+
+	return static_cast<std::uint8_t*>(buffer);
 }

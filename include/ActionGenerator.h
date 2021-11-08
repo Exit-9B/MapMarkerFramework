@@ -64,16 +64,14 @@ private:
 		std::int16_t programCounter;
 	};
 
-	auto GetConstantPoolSize() -> std::int16_t;
-
-	auto GetPos() -> std::int16_t;
-
 	// Note: currently private because it could break labels
 	void FlushConstantPool();
 
-	auto InitBuffer(std::size_t a_size) -> std::uint8_t*;
+	auto GetPos() -> std::int16_t;
 
 	void AddUndefinedLabel(Label& a_label, std::int16_t a_writePos, std::int16_t a_programPos);
+
+	auto InitBuffer(std::size_t a_size) -> std::uint8_t*;
 
 	RE::GASActionBufferData* _bufferData;
 	SWFOutputStream _committed;
