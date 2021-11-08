@@ -1,4 +1,4 @@
-Enables mods to override map marker icons without editing them in xEdit.
+Framework for mods to add new map marker icons without conflicting with UI files.
 
 ## Requirements
 * [CMake](https://cmake.org/)

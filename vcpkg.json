@@ -1,7 +1,7 @@
 {
   "name": "mapmarkerframework",
-  "version-string": "1.0.0",
-  "description": "Enables mods to override map marker icons",
+  "version-string": "2.0.2",
+  "description": "Framework for mods to add new map marker icons",
   "homepage": "https://github.com/Exit-9B/MapMarkerFramework",
   "license": "MIT",
   "dependencies": [
