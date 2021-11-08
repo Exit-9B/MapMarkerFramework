@@ -34,7 +34,7 @@ void MapConfigLoader::LoadAll()
 			continue;
 		}
 
-		LoadFromFile(file->fileName, fileStream);
+		LoadFromFile(fileName.string(), fileStream);
 	}
 }
 
