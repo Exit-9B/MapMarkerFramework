@@ -2,8 +2,8 @@
 
 auto GFxUtil::GetMovieDefImpl(RE::GFxMovieDef* a_movieDef) -> RE::GFxMovieDefImpl*
 {
-	// SkyrimSE 1.5.97.0: 0x017DD860
-	static REL::Relocation<std::uintptr_t> GFxMovieDefImpl_vtbl{ REL::ID(292388), 0x278 };
+	// SkyrimSE 1.6.318.0
+	static REL::Relocation<std::uintptr_t> GFxMovieDefImpl_vtbl{ REL::Offset(0x018D0260) };
 
 	if (*reinterpret_cast<std::uintptr_t*>(a_movieDef) == GFxMovieDefImpl_vtbl.get()) {
 		return static_cast<RE::GFxMovieDefImpl*>(a_movieDef);

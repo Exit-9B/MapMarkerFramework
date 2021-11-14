@@ -11,6 +11,37 @@ set(SOURCES ${SOURCES}
     include/SWFOutputStream.h
     include/Settings.h
     include/TagFactory.h
+    include/RE/Ext.h
+    include/RE/G/GASActionBufferData.h
+    include/RE/G/GASDoAction.h
+    include/RE/G/GASExecuteTag.h
+    include/RE/G/GAcquireInterface.h
+    include/RE/G/GArrayConstPolicy.h
+    include/RE/G/GEvent.h
+    include/RE/G/GFxCharacterDef.h
+    include/RE/G/GFxInitImportActions.h
+    include/RE/G/GFxLoadUpdateSync.h
+    include/RE/G/GFxMovieDataDef.h
+    include/RE/G/GFxMovieDefBindStates.h
+    include/RE/G/GFxMovieDefImpl.h
+    include/RE/G/GFxPlaceObject.h
+    include/RE/G/GFxPlaceObject2.h
+    include/RE/G/GFxPlaceObject2a.h
+    include/RE/G/GFxPlaceObject3.h
+    include/RE/G/GFxPlaceObjectBase.h
+    include/RE/G/GFxPlaceObjectUnpacked.h
+    include/RE/G/GFxRemoveObject.h
+    include/RE/G/GFxRemoveObject2.h
+    include/RE/G/GFxResourceLib.h
+    include/RE/G/GFxResourceReport.h
+    include/RE/G/GFxSpriteDef.h
+    include/RE/G/GFxStateBagImpl.h
+    include/RE/G/GFxTimelineDef.h
+    include/RE/G/GHashsetNodeEntry.h
+    include/RE/G/GHashUncached.h
+    include/RE/G/GMutex.h
+    include/RE/G/GWaitable.h
+    include/RE/G/GWaitCondition.h
     src/ActionGenerator.cpp
     src/DiscoveryMusicManager.cpp
     src/FormUtil.cpp

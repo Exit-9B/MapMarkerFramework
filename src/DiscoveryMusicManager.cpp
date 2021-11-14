@@ -41,8 +41,8 @@ auto DiscoveryMusicManager::GetMusic(RE::MARKER_TYPE a_markerType) -> std::strin
 
 void DiscoveryMusicManager::InstallHooks()
 {
-	// SkyrimSE 1.5.97.0: 0x00881383
-	REL::Relocation<std::uintptr_t> hook{ REL::ID(50758), 0x3B3 };
+	// SkyrimSE 1.6.318.0: 0x008B12B0+0x2BB (HUDNotifications::ProcessMessage)
+	REL::Relocation<std::uintptr_t> hook{ REL::Offset(0x008B12B0 + 0x2BB) };
 
 	struct Patch : Xbyak::CodeGenerator
 	{
@@ -51,8 +51,8 @@ void DiscoveryMusicManager::InstallHooks()
 			Xbyak::Label funcLbl;
 			Xbyak::Label retnLbl;
 
-			mov(edx, ptr[rdi + 0x44]);
-			lea(rcx, ptr[rbp - 0x29]);
+			mov(edx, ptr[r15 + 0x44]);
+			lea(rcx, ptr[rbp - 0x19]);
 			call(ptr[rip + funcLbl]);
 			jmp(ptr[rip + retnLbl]);
 
@@ -60,7 +60,7 @@ void DiscoveryMusicManager::InstallHooks()
 			dq(a_funcAddr);
 
 			L(retnLbl);
-			dq(a_hookAddr + 0x16A); // SkyrimSE 1.5.97.0: 0x008814ED
+			dq(a_hookAddr + 0x1EB); // SkyrimSE 1.6.318.0: 0x008B156B
 		}
 	};
 
@@ -68,7 +68,7 @@ void DiscoveryMusicManager::InstallHooks()
 	Patch patch{ hook.address(), funcAddr };
 	patch.ready();
 
-	if (patch.getSize() > 0x16A) {
+	if (patch.getSize() > 0x6B) {
 		logger::critical("Hook was too large, failed to install"sv);
 		return;
 	}

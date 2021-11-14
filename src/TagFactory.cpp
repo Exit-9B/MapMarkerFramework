@@ -5,10 +5,10 @@ auto TagFactory::MakePlaceObject(
 	AllocateCallback a_alloc,
 	const RE::GFxPlaceObjectData& a_data) -> RE::GFxPlaceObjectBase*
 {
-	// SkyrimSE 1.5.97.0: 0x017BE0E0
-	static REL::Relocation<std::uintptr_t> GFxPlaceObject2_vtbl{ REL::ID(291775), 0x128 };
-	// SkyrimSE 1.5.97.0: 0x017BE138
-	static REL::Relocation<std::uintptr_t> GFxPlaceObject3_vtbl{ REL::ID(291775), 0x180 };
+	// SkyrimSE 1.6.318.0
+	static REL::Relocation<std::uintptr_t> GFxPlaceObject2_vtbl{ REL::Offset(0x018B1488) };
+	// SkyrimSE 1.6.318.0
+	static REL::Relocation<std::uintptr_t> GFxPlaceObject3_vtbl{ REL::Offset(0x018B14E0) };
 
 	SWFOutputStream sos;
 	RE::stl::enumeration<PlaceFlags2, std::uint8_t> placeFlags2(PlaceFlags2::kNone);
@@ -94,8 +94,8 @@ auto TagFactory::MakeRemoveObject(
 	AllocateCallback a_alloc,
 	std::uint16_t a_depth) -> RE::GFxRemoveObject2*
 {
-	// SkyrimSE 1.5.97.0: 0x017DC448
-	static REL::Relocation<std::uintptr_t> GFxRemoveObject2_vtbl{ REL::ID(292202), 0x240 };
+	// SkyrimSE 1.6.318.0
+	static REL::Relocation<std::uintptr_t> GFxRemoveObject2_vtbl{ REL::Offset(0x018DEB48) };
 
 	auto removeObject = static_cast<RE::GFxRemoveObject2*>(
 		a_alloc(sizeof(RE::GFxRemoveObject2)));
@@ -116,8 +116,8 @@ auto TagFactory::MakeRemoveObject(
 	std::uint16_t a_characterId,
 	std::uint16_t a_depth) -> RE::GFxRemoveObject*
 {
-	// SkyrimSE 1.5.97.0: 0x017DC408
-	static REL::Relocation<std::uintptr_t> GFxRemoveObject_vtbl{ REL::ID(292202), 0x200 };
+	// SkyrimSE 1.6.318.0
+	static REL::Relocation<std::uintptr_t> GFxRemoveObject_vtbl{ REL::Offset(0x018DEB08) };
 
 	auto removeObject = static_cast<RE::GFxRemoveObject*>(
 		a_alloc(sizeof(RE::GFxRemoveObject)));
@@ -138,8 +138,8 @@ auto TagFactory::MakeInitImportActions(
 	AllocateCallback a_alloc,
 	std::uint32_t a_movieIndex) -> RE::GFxInitImportActions*
 {
-	// SkyrimSE 1.5.97.0: 0x017DC4C8
-	static REL::Relocation<std::uintptr_t> GFxInitImportActions_vtbl{ REL::ID(292202), 0x2C0 };
+	// SkyrimSE 1.6.318.0
+	static REL::Relocation<std::uintptr_t> GFxInitImportActions_vtbl{ REL::Offset(0x018DEBC8) };
 
 	auto initImportActions = static_cast<RE::GFxInitImportActions*>(
 		a_alloc(sizeof(RE::GFxInitImportActions)));
@@ -159,8 +159,8 @@ auto TagFactory::MakeDoAction(
 	AllocateCallback a_alloc,
 	RE::GASActionBufferData* a_data) -> RE::GASDoAction*
 {
-	// SkyrimSE 1.5.97.0: 0x017BC9C0
-	static REL::Relocation<std::uintptr_t> GASDoAction_vtbl{ REL::ID(291613) };
+	// SkyrimSE 1.6.318.0
+	static REL::Relocation<std::uintptr_t> GASDoAction_vtbl{ REL::Offset(0x018AFB90) };
 
 	auto doAction = static_cast<RE::GASDoAction*>(a_alloc(sizeof(RE::GASDoAction)));
 	std::memset(doAction, 0, sizeof(RE::GASDoAction));

@@ -27,12 +27,14 @@ void ImportManager::InstallHooks()
 {
 	auto& trampoline = SKSE::GetTrampoline();
 
-	// SkyrimSE 1.5.97.0: 0x0087CECF
-	REL::Relocation<std::uintptr_t> hud_hook{ REL::ID(50716), 0xFF };
+	// SkyrimSE 1.6.318.0
+	REL::Relocation<std::uintptr_t> hud_hook{ REL::Offset(0x008AC4F0 + 0xFE) };
+
 	_LoadMovie = trampoline.write_call<5>(hud_hook.address(), LoadMovie);
 
-	// SkyrimSE 1.5.97.0: 0x008E36CF
-	REL::Relocation<std::uintptr_t> map_hook{ REL::ID(52206), 0x1CF };
+	// SkyrimSE 1.6.318.0
+	REL::Relocation<std::uintptr_t> map_hook{ REL::Offset(0x009128F0 + 0x1D1) };
+
 	trampoline.write_call<5>(map_hook.address(), LoadMovie);
 
 	logger::info("Installed hooks for movie setup"sv);
