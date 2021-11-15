@@ -17,7 +17,7 @@ public:
 	void WriteUI16(std::uint16_t a_value);
 	void WriteUI32(std::uint32_t a_value);
 	void WriteLong(std::uint64_t a_value);
-	void WriteFIXED(float a_value);
+	void WriteFIXED(double a_value);
 	void WriteFIXED8(float a_value);
 	void WriteFLOAT(float a_value);
 	void WriteDOUBLE(double a_value);

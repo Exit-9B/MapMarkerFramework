@@ -74,7 +74,7 @@ void SWFOutputStream::WriteLong(std::uint64_t a_value)
 	Write((a_value >> 24) & 0xFF);
 }
 
-void SWFOutputStream::WriteFIXED(float a_value)
+void SWFOutputStream::WriteFIXED(double a_value)
 {
 	WriteUI32(static_cast<std::uint32_t>(a_value * (1 << 16)));
 }
