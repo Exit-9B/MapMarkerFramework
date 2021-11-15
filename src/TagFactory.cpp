@@ -5,10 +5,8 @@ auto TagFactory::MakePlaceObject(
 	AllocateCallback a_alloc,
 	const RE::GFxPlaceObjectData& a_data) -> RE::GFxPlaceObjectBase*
 {
-	// SkyrimSE 1.6.318.0
-	static REL::Relocation<std::uintptr_t> GFxPlaceObject2_vtbl{ REL::Offset(0x018B1488) };
-	// SkyrimSE 1.6.318.0
-	static REL::Relocation<std::uintptr_t> GFxPlaceObject3_vtbl{ REL::Offset(0x018B14E0) };
+	static REL::Relocation<std::uintptr_t> GFxPlaceObject2_vtbl{ Offset::GFxPlaceObject2::Vtbl };
+	static REL::Relocation<std::uintptr_t> GFxPlaceObject3_vtbl{ Offset::GFxPlaceObject2::Vtbl };
 
 	SWFOutputStream sos;
 	RE::stl::enumeration<PlaceFlags2, std::uint8_t> placeFlags2(PlaceFlags2::kNone);
@@ -94,8 +92,7 @@ auto TagFactory::MakeRemoveObject(
 	AllocateCallback a_alloc,
 	std::uint16_t a_depth) -> RE::GFxRemoveObject2*
 {
-	// SkyrimSE 1.6.318.0
-	static REL::Relocation<std::uintptr_t> GFxRemoveObject2_vtbl{ REL::Offset(0x018DEB48) };
+	static REL::Relocation<std::uintptr_t> GFxRemoveObject2_vtbl{ Offset::GFxRemoveObject2::Vtbl };
 
 	auto removeObject = static_cast<RE::GFxRemoveObject2*>(
 		a_alloc(sizeof(RE::GFxRemoveObject2)));
@@ -116,8 +113,7 @@ auto TagFactory::MakeRemoveObject(
 	std::uint16_t a_characterId,
 	std::uint16_t a_depth) -> RE::GFxRemoveObject*
 {
-	// SkyrimSE 1.6.318.0
-	static REL::Relocation<std::uintptr_t> GFxRemoveObject_vtbl{ REL::Offset(0x018DEB08) };
+	static REL::Relocation<std::uintptr_t> GFxRemoveObject_vtbl{ Offset::GFxRemoveObject::Vtbl };
 
 	auto removeObject = static_cast<RE::GFxRemoveObject*>(
 		a_alloc(sizeof(RE::GFxRemoveObject)));
@@ -138,8 +134,9 @@ auto TagFactory::MakeInitImportActions(
 	AllocateCallback a_alloc,
 	std::uint32_t a_movieIndex) -> RE::GFxInitImportActions*
 {
-	// SkyrimSE 1.6.318.0
-	static REL::Relocation<std::uintptr_t> GFxInitImportActions_vtbl{ REL::Offset(0x018DEBC8) };
+	static REL::Relocation<std::uintptr_t> GFxInitImportActions_vtbl{
+		Offset::GFxInitImportActions::Vtbl
+	};
 
 	auto initImportActions = static_cast<RE::GFxInitImportActions*>(
 		a_alloc(sizeof(RE::GFxInitImportActions)));
@@ -159,8 +156,7 @@ auto TagFactory::MakeDoAction(
 	AllocateCallback a_alloc,
 	RE::GASActionBufferData* a_data) -> RE::GASDoAction*
 {
-	// SkyrimSE 1.6.318.0
-	static REL::Relocation<std::uintptr_t> GASDoAction_vtbl{ REL::Offset(0x018AFB90) };
+	static REL::Relocation<std::uintptr_t> GASDoAction_vtbl{ Offset::GASDoAction::Vtbl };
 
 	auto doAction = static_cast<RE::GASDoAction*>(a_alloc(sizeof(RE::GASDoAction)));
 	std::memset(doAction, 0, sizeof(RE::GASDoAction));

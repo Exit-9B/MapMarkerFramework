@@ -1,4 +1,5 @@
 #include "DiscoveryMusicManager.h"
+#include "Patches.h"
 
 #include <xbyak/xbyak.h>
 
@@ -41,40 +42,9 @@ auto DiscoveryMusicManager::GetMusic(RE::MARKER_TYPE a_markerType) -> std::strin
 
 void DiscoveryMusicManager::InstallHooks()
 {
-	// SkyrimSE 1.6.318.0: 0x008B12B0+0x2BB (HUDNotifications::ProcessMessage)
-	REL::Relocation<std::uintptr_t> hook{ REL::Offset(0x008B12B0 + 0x2BB) };
-
-	struct Patch : Xbyak::CodeGenerator
-	{
-		Patch(std::uintptr_t a_hookAddr, std::uintptr_t a_funcAddr)
-		{
-			Xbyak::Label funcLbl;
-			Xbyak::Label retnLbl;
-
-			mov(edx, ptr[r15 + 0x44]);
-			lea(rcx, ptr[rbp - 0x19]);
-			call(ptr[rip + funcLbl]);
-			jmp(ptr[rip + retnLbl]);
-
-			L(funcLbl);
-			dq(a_funcAddr);
-
-			L(retnLbl);
-			dq(a_hookAddr + 0x1EB); // SkyrimSE 1.6.318.0: 0x008B156B
-		}
-	};
-
-	auto funcAddr = reinterpret_cast<std::uintptr_t>(AssignMusic);
-	Patch patch{ hook.address(), funcAddr };
-	patch.ready();
-
-	if (patch.getSize() > 0x6B) {
-		logger::critical("Hook was too large, failed to install"sv);
-		return;
+	if (Patch::WriteDiscoveryMusicPatch(AssignMusic)) {
+		logger::info("Installed hook for discovery music"sv);
 	}
-
-	REL::safe_write(hook.address(), patch.getCode(), patch.getSize());
-	logger::info("Installed hook for discovery music"sv);
 }
 
 auto DiscoveryMusicManager::AssignMusic(

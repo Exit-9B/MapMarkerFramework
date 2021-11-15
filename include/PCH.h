@@ -2,6 +2,7 @@
 
 #include "RE/Skyrim.h"
 #include "RE/Ext.h"
+#include "RE/OffsetsExt.h"
 #include "SKSE/SKSE.h"
 #include <unordered_set>
 #include <tsl/ordered_map.h>

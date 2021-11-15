@@ -8,9 +8,6 @@ set(SOURCES ${SOURCES}
     include/ImportManager.h
     include/MapConfigLoader.h
     include/PCH.h
-    include/SWFOutputStream.h
-    include/Settings.h
-    include/TagFactory.h
     include/RE/Ext.h
     include/RE/G/GASActionBufferData.h
     include/RE/G/GASDoAction.h
@@ -42,6 +39,11 @@ set(SOURCES ${SOURCES}
     include/RE/G/GMutex.h
     include/RE/G/GWaitable.h
     include/RE/G/GWaitCondition.h
+    include/RE/OffsetsExt.h
+    include/Patches.h
+    include/SWFOutputStream.h
+    include/Settings.h
+    include/TagFactory.h
     src/ActionGenerator.cpp
     src/DiscoveryMusicManager.cpp
     src/FormUtil.cpp
@@ -51,6 +53,7 @@ set(SOURCES ${SOURCES}
     src/ImportManager.cpp
     src/MapConfigLoader.cpp
     src/PCH.cpp
+    src/Patches.cpp
     src/SWFOutputStream.cpp
     src/Settings.cpp
     src/TagFactory.cpp

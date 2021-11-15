@@ -240,8 +240,9 @@ void ActionGenerator::AddUndefinedLabel(
 
 auto ActionGenerator::InitBuffer(std::size_t a_size) -> std::uint8_t*
 {
-	// SkyrimSE 1.6.318.0
-	static REL::Relocation<std::uintptr_t> GASActionBufferData_vtbl{ REL::Offset(0x018AF5C0) };
+	static REL::Relocation<std::uintptr_t> GASActionBufferData_vtbl{
+		Offset::GASActionBufferData::Vtbl
+	};
 
 	_bufferData = static_cast<RE::GASActionBufferData*>(
 		RE::GMemory::Alloc(sizeof(RE::GASActionBufferData)));

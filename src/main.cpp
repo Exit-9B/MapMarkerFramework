@@ -4,6 +4,14 @@
 
 void InitLogger()
 {
+	static bool initialized = false;
+	if (!initialized) {
+		initialized = true;
+	}
+	else {
+		return;
+	}
+
 #ifndef NDEBUG
 	auto sink = std::make_shared<spdlog::sinks::msvc_sink_mt>();
 #else
