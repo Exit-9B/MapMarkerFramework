@@ -177,7 +177,19 @@ void MapConfigLoader::UpdateMarkers(std::uint32_t a_customIconIndex) const
 {
 	for (auto& [markerRef, marker] : _mapMarkers) {
 		auto markerType = ResolveMarker(marker, a_customIconIndex);
-		if (!markerRef || markerType == RE::MARKER_TYPE::kNone) {
+		if (!markerRef) {
+			continue;
+		}
+
+		if (markerType == RE::MARKER_TYPE::kNone) {
+			auto location = markerRef->GetEditorLocation();
+			auto locationName = location ? location->GetFullName() : "BAD LOCATION";
+
+			logger::warn(
+				"MapMarker Reference ({:08X}) in {} failed to resolve custom icon"sv,
+				markerRef->GetFormID(),
+				locationName);
+
 			continue;
 		}
 

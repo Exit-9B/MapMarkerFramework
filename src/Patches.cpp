@@ -1,5 +1,4 @@
 #include "Patches.h"
-#include "RE/OffsetsExt.h"
 #include <xbyak/xbyak.h>
 
 bool Patch::WriteDiscoveryMusicPatch(AssignMusicCallback* a_callback)
