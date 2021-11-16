@@ -210,14 +210,22 @@ auto MapConfigLoader::ResolveMarker(MapMarker a_marker, std::uint32_t a_customIc
 {
 	if (std::holds_alternative<RE::MARKER_TYPE>(a_marker)) {
 		auto markerType = std::get<RE::MARKER_TYPE>(a_marker);
-		if (static_cast<std::uint32_t>(markerType) < a_customIconIndex) {
+		auto index = static_cast<std::uint32_t>(markerType);
+		if (index < a_customIconIndex) {
 			return markerType;
+		}
+		else {
+			logger::warn("Icon index {} is out of range"sv, index);
 		}
 	}
 	else if (std::holds_alternative<std::string>(a_marker) && a_customIconIndex != 0) {
-		auto item = _iconNames.find(std::get<std::string>(a_marker));
+		auto& iconName = std::get<std::string>(a_marker);
+		auto item = _iconNames.find(iconName);
 		if (item != _iconNames.end()) {
 			return static_cast<RE::MARKER_TYPE>(a_customIconIndex + item->second);
+		}
+		else {
+			logger::warn("Icon name '{}' is not defined"sv, iconName);
 		}
 	}
 
