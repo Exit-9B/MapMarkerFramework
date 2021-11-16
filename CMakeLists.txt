@@ -32,7 +32,7 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STR
 
 project(
 	MapMarkerFramework
-	VERSION 2.0.3
+	VERSION 2.0.4
 	LANGUAGES CXX
 )
 
