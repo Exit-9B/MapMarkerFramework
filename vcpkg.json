@@ -5,9 +5,8 @@
   "homepage": "https://github.com/Exit-9B/MapMarkerFramework",
   "license": "MIT",
   "dependencies": [
-    "boost-atomic",
     "boost-stl-interfaces",
-    "span-lite",
+    "rsm-binary-io",
     "spdlog",
     "xbyak",
     "jsoncpp",

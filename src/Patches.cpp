@@ -4,7 +4,7 @@
 bool Patch::WriteDiscoveryMusicPatch(AssignMusicCallback* a_callback)
 {
 	// SkyrimSE 1.6.318.0: 0x008B12B0+0x2BB
-	std::uintptr_t hookAddr = Offset::HUDNotifications::ProcessMessage.address() + 0x2BB;
+	REL::Relocation<std::uintptr_t> hook{ Offset::HUDNotifications::ProcessMessage, 0x2BB };
 
 	struct Patch : Xbyak::CodeGenerator
 	{
@@ -27,7 +27,7 @@ bool Patch::WriteDiscoveryMusicPatch(AssignMusicCallback* a_callback)
 	};
 
 	std::uintptr_t funcAddr = reinterpret_cast<std::uintptr_t>(a_callback);
-	Patch patch{ hookAddr, funcAddr };
+	Patch patch{ hook.address(), funcAddr };
 	patch.ready();
 
 	if (patch.getSize() > 0x6B) {
@@ -35,6 +35,6 @@ bool Patch::WriteDiscoveryMusicPatch(AssignMusicCallback* a_callback)
 		return false;
 	}
 
-	REL::safe_write(hookAddr, patch.getCode(), patch.getSize());
+	REL::safe_write(hook.address(), patch.getCode(), patch.getSize());
 	return true;
 }

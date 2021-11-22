@@ -39,13 +39,13 @@ void InitLogger()
 	logger::info(FMT_STRING("{} v{}"), Version::PROJECT, Version::NAME);
 }
 
-extern "C" DLLEXPORT constexpr auto SKSEPlugin_Version =
+extern "C" DLLEXPORT constinit auto SKSEPlugin_Version =
 []() {
 	SKSE::PluginVersionData v{};
 	v.pluginVersion = Version::MAJOR;
 	v.PluginName(Version::PROJECT);
 	v.AuthorName("Parapets"sv);
-	v.CompatibleVersions({ SKSE::RUNTIME_1_6_318 });
+	v.UsesAddressLibrary(true);
 	return v;
 }();
 
