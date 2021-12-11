@@ -193,12 +193,13 @@ void MapConfigLoader::LoadFromFile(
 				continue;
 			}
 
+			auto location = localMapMarker["location"].asString();
 			auto vendorList = localMapMarker["vendorList"].asString();
 			auto locType = localMapMarker["locType"].asString();
 
-			if (vendorList.empty() && locType.empty()) {
+			if (location.empty() && vendorList.empty() && locType.empty()) {
 				logger::warn(
-					"Local map marker missing location type / vendor list in {}"sv,
+					"Local map marker missing location / keyword / vendor list in {}"sv,
 					a_fileName);
 
 				continue;
@@ -218,6 +219,21 @@ void MapConfigLoader::LoadFromFile(
 				markerKey = iconName;
 			}
 
+			if (!location.empty()) {
+				auto locRef = skyrim_cast<RE::BGSLocation*>(
+					FormUtil::GetFormFromIdentifier(location));
+
+				if (!locRef) {
+					logger::warn(
+						"'{}' did not correspond to a valid Location in {}"sv,
+						location,
+						a_fileName);
+
+					continue;
+				}
+
+				_locationMarkers[locRef] = markerKey;
+			}
 			if (!vendorList.empty()) {
 				auto buySellList = skyrim_cast<RE::BGSListForm*>(
 					FormUtil::GetFormFromIdentifier(vendorList));
@@ -284,6 +300,24 @@ void MapConfigLoader::UpdateMarkers(std::uint32_t a_customIconIndex) const
 	}
 
 	auto localMapManager = LocalMapManager::GetSingleton();
+
+	for (auto& [location, marker] : _locationMarkers) {
+		if (!location) {
+			continue;
+		}
+
+		auto markerType = ResolveMarker(marker, a_customIconIndex);
+
+		if (markerType == RE::MARKER_TYPE::kNone) {
+			logger::warn(
+				"Location ({:08X}) failed to resolve custom icon"sv,
+				location->GetFormID());
+
+			continue;
+		}
+
+		localMapManager->AddLocationMarker(location, markerType);
+	}
 
 	for (auto& [vendorList, marker] : _vendorMarkers) {
 		if (!vendorList) {

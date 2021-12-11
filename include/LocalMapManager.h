@@ -8,6 +8,7 @@ public:
 	static void InstallHooks();
 	void Load();
 
+	void AddLocationMarker(RE::BGSLocation* a_location, RE::MARKER_TYPE a_marker);
 	void AddLocTypeMarker(RE::BGSKeyword* a_locType, RE::MARKER_TYPE a_marker);
 	void AddVendorMarker(RE::BGSListForm* a_vendorList, RE::MARKER_TYPE a_marker);
 
@@ -41,6 +42,7 @@ private:
 
 	std::unordered_map<RE::BGSLocation*, RE::BGSListForm*> _vendorLists;
 
+	std::unordered_map<RE::BGSLocation*, RE::MARKER_TYPE> _locationMarkers;
 	std::unordered_map<RE::BGSListForm*, RE::MARKER_TYPE> _vendorMarkers;
 	std::map<RE::BGSKeyword*, RE::MARKER_TYPE> _locTypeMarkers;
 

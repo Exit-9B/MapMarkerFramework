@@ -37,6 +37,11 @@ void LocalMapManager::Load()
 	}
 }
 
+void LocalMapManager::AddLocationMarker(RE::BGSLocation* a_location, RE::MARKER_TYPE a_marker)
+{
+	_locationMarkers[a_location] = a_marker;
+}
+
 void LocalMapManager::AddLocTypeMarker(RE::BGSKeyword* a_locType, RE::MARKER_TYPE a_marker)
 {
 	_locTypeMarkers[a_locType] = a_marker;
@@ -73,15 +78,20 @@ auto LocalMapManager::GetSpecialMarkerType(SpecialMarkerData* a_data) -> RE::MAR
 	if (location) {
 		auto importManager = GetSingleton();
 
+		auto locationMarker = importManager->_locationMarkers.find(location);
+		if (locationMarker != importManager->_locationMarkers.end()) {
+			return locationMarker->second;
+		}
+
 		if (location->HasKeyword(locTypeStore)) {
 
 			auto vendorList = importManager->GetVendorList(location);
 
 			if (vendorList) {
 
-				auto it = importManager->_vendorMarkers.find(vendorList);
-				if (it != importManager->_vendorMarkers.end()) {
-					return it->second;
+				auto vendorMarker = importManager->_vendorMarkers.find(vendorList);
+				if (vendorMarker != importManager->_vendorMarkers.end()) {
+					return vendorMarker->second;
 				}
 			}
 		}
