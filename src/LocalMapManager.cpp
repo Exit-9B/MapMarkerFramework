@@ -31,7 +31,7 @@ void LocalMapManager::Load()
 			auto location = vendorChest ? vendorChest->GetEditorLocation() : nullptr;
 
 			if (vendorList && location) {
-				vendorLists[location] = vendorList;
+				_vendorLists[location] = vendorList;
 			}
 		}
 	}
@@ -39,12 +39,12 @@ void LocalMapManager::Load()
 
 void LocalMapManager::AddLocTypeMarker(RE::BGSKeyword* a_locType, RE::MARKER_TYPE a_marker)
 {
-	locTypeMarkers[a_locType] = a_marker;
+	_locTypeMarkers[a_locType] = a_marker;
 }
 
 void LocalMapManager::AddVendorMarker(RE::BGSListForm* a_vendorList, RE::MARKER_TYPE a_marker)
 {
-	vendorMarkers[a_vendorList] = a_marker;
+	_vendorMarkers[a_vendorList] = a_marker;
 }
 
 auto LocalMapManager::GetSpecialMarkerType(SpecialMarkerData* a_data) -> RE::MARKER_TYPE
@@ -53,31 +53,43 @@ auto LocalMapManager::GetSpecialMarkerType(SpecialMarkerData* a_data) -> RE::MAR
 
 	constexpr RE::MARKER_TYPE kDoor = static_cast<RE::MARKER_TYPE>(61);
 
-	if (type == kDoor) {
+	if (type != kDoor) {
+		return type;
+	}
 
-		RE::NiPointer<RE::TESObjectREFR> objectRef;
-		RE::LookupReferenceByHandle(a_data->refHandle, objectRef);
+	RE::NiPointer<RE::TESObjectREFR> objectRef;
+	RE::LookupReferenceByHandle(a_data->refHandle, objectRef);
 
-		auto teleport = objectRef ? objectRef->extraList.GetByType<RE::ExtraTeleport>() : nullptr;
+	auto teleport = objectRef ? objectRef->extraList.GetByType<RE::ExtraTeleport>() : nullptr;
 
-		if (teleport) {
+	if (!teleport) {
+		return type;
+	}
 
-			auto linkedDoor = teleport->teleportData->linkedDoor.get();
-			auto location = linkedDoor->GetEditorLocation();
-			auto locTypeStore = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("LocTypeStore"sv);
+	auto linkedDoor = teleport->teleportData->linkedDoor.get();
+	auto location = linkedDoor->GetEditorLocation();
+	auto locTypeStore = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("LocTypeStore"sv);
 
-			if (location && location->HasKeyword(locTypeStore)) {
+	if (location) {
+		auto importManager = GetSingleton();
 
-				auto importManager = GetSingleton();
-				auto vendorList = importManager->GetVendorList(location);
+		if (location->HasKeyword(locTypeStore)) {
 
-				if (vendorList) {
+			auto vendorList = importManager->GetVendorList(location);
 
-					auto it = importManager->vendorMarkers.find(vendorList);
-					if (it != importManager->vendorMarkers.end()) {
-						return it->second;
-					}
+			if (vendorList) {
+
+				auto it = importManager->_vendorMarkers.find(vendorList);
+				if (it != importManager->_vendorMarkers.end()) {
+					return it->second;
 				}
+			}
+		}
+
+		for (auto& [locKeyword, markerType] : importManager->_locTypeMarkers) {
+
+			if (location->HasKeyword(locKeyword)) {
+				return markerType;
 			}
 		}
 	}
@@ -87,6 +99,6 @@ auto LocalMapManager::GetSpecialMarkerType(SpecialMarkerData* a_data) -> RE::MAR
 
 auto LocalMapManager::GetVendorList(RE::BGSLocation* a_location) -> RE::BGSListForm*
 {
-	auto it = vendorLists.find(a_location);
-	return it != vendorLists.end() ? it->second : nullptr;
+	auto it = _vendorLists.find(a_location);
+	return it != _vendorLists.end() ? it->second : nullptr;
 }

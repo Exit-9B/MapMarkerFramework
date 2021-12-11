@@ -137,20 +137,19 @@ void MapConfigLoader::LoadFromFile(
 			}
 
 			auto refID = mapMarker["refID"].asString();
-			auto vendorList = mapMarker["vendorList"].asString();
+
+			if (refID.empty()) {
+				logger::warn(
+					"Map marker missing reference ID in {}"sv,
+					a_fileName);
+
+				continue;
+			}
 
 			auto icon = mapMarker["icon"].asUInt();
 			auto markerType = static_cast<RE::MARKER_TYPE>(icon);
 
 			auto iconName = mapMarker["iconName"].asString();
-
-			if (refID.empty() && vendorList.empty()) {
-				logger::warn(
-					"Map marker missing reference ID / location type / vendor list in {}"sv,
-					a_fileName);
-
-				continue;
-			}
 
 			if (markerType == RE::MARKER_TYPE::kNone && iconName.empty()) {
 				logger::warn("Map marker missing icon data in {}"sv, a_fileName);
@@ -176,7 +175,43 @@ void MapConfigLoader::LoadFromFile(
 
 				_mapMarkers[markerRef] = markerKey;
 			}
-			else if (!vendorList.empty()) {
+		}
+	}
+
+	Json::Value localMapMarkers = root["localMapMarkers"];
+	if (localMapMarkers.isArray()) {
+		for (auto& localMapMarker : localMapMarkers) {
+			if (!localMapMarker.isObject()) {
+				logger::warn("Failed to fetch local map markers from {}"sv, a_fileName);
+				continue;
+			}
+
+			auto vendorList = localMapMarker["vendorList"].asString();
+			auto locType = localMapMarker["locType"].asString();
+
+			if (vendorList.empty() && locType.empty()) {
+				logger::warn(
+					"Local map marker missing location type / vendor list in {}"sv,
+					a_fileName);
+
+				continue;
+			}
+
+			auto icon = localMapMarker["icon"].asUInt();
+			auto markerType = static_cast<RE::MARKER_TYPE>(icon);
+
+			auto iconName = localMapMarker["iconName"].asString();
+
+			if (markerType == RE::MARKER_TYPE::kNone && iconName.empty()) {
+				logger::warn("Local map marker missing icon data in {}"sv, a_fileName);
+			}
+
+			MapMarker markerKey = markerType;
+			if (!iconName.empty()) {
+				markerKey = iconName;
+			}
+
+			if (!vendorList.empty()) {
 				auto buySellList = skyrim_cast<RE::BGSListForm*>(
 					FormUtil::GetFormFromIdentifier(vendorList));
 
@@ -190,6 +225,20 @@ void MapConfigLoader::LoadFromFile(
 				}
 
 				_vendorMarkers[buySellList] = markerKey;
+			}
+			else if (!locType.empty()) {
+				auto locKeyword = RE::TESForm::LookupByEditorID<RE::BGSKeyword>(locType);
+
+				if (!locKeyword) {
+					logger::warn(
+						"'{}' did not correspond to a valid Keyword in {}"sv,
+						locType,
+						a_fileName);
+
+					continue;
+				}
+
+				_locTypeMarkers[locKeyword] = markerKey;
 			}
 		}
 	}
@@ -227,6 +276,8 @@ void MapConfigLoader::UpdateMarkers(std::uint32_t a_customIconIndex) const
 		}
 	}
 
+	auto localMapManager = LocalMapManager::GetSingleton();
+
 	for (auto& [vendorList, marker] : _vendorMarkers) {
 		if (!vendorList) {
 			continue;
@@ -242,8 +293,25 @@ void MapConfigLoader::UpdateMarkers(std::uint32_t a_customIconIndex) const
 			continue;
 		}
 
-		auto localMapManager = LocalMapManager::GetSingleton();
 		localMapManager->AddVendorMarker(vendorList, markerType);
+	}
+
+	for (auto& [locType, marker] : _locTypeMarkers) {
+		if (!locType) {
+			continue;
+		}
+
+		auto markerType = ResolveMarker(marker, a_customIconIndex);
+
+		if (markerType == RE::MARKER_TYPE::kNone) {
+			logger::warn(
+				"Location Keyword ({:08X}) failed to resolve custom icon"sv,
+				locType->GetFormID());
+
+			continue;
+		}
+
+		localMapManager->AddLocTypeMarker(locType, markerType);
 	}
 }
 

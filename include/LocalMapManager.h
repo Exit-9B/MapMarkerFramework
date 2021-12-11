@@ -39,10 +39,10 @@ private:
 	static RE::MARKER_TYPE GetSpecialMarkerType(SpecialMarkerData* a_data);
 	RE::BGSListForm* GetVendorList(RE::BGSLocation* a_location);
 
-	std::unordered_map<RE::BGSLocation*, RE::BGSListForm*> vendorLists;
+	std::unordered_map<RE::BGSLocation*, RE::BGSListForm*> _vendorLists;
 
-	std::unordered_map<RE::BGSListForm*, RE::MARKER_TYPE> vendorMarkers;
-	std::map<RE::BGSKeyword*, RE::MARKER_TYPE> locTypeMarkers;
+	std::unordered_map<RE::BGSListForm*, RE::MARKER_TYPE> _vendorMarkers;
+	std::map<RE::BGSKeyword*, RE::MARKER_TYPE> _locTypeMarkers;
 
 	inline static REL::Relocation<decltype(GetSpecialMarkerType)> _GetSpecialMarkerType;
 };
