@@ -2,6 +2,7 @@
 #include "MapConfigLoader.h"
 #include "GFxUtil.h"
 #include "Settings.h"
+#include "TagFactory.h"
 
 namespace chrono = std::chrono;
 
@@ -15,12 +16,19 @@ void ImportManager::AddCustomIcon(
 	std::filesystem::path a_source,
 	const std::string& a_exportName,
 	const std::string& a_exportNameUndiscovered,
-	float a_iconScale)
+	float a_iconScale,
+	bool a_hideFromHUD)
 {
 	auto path = std::filesystem::path{ "MapMarkers"sv } / a_source;
 	auto pathStr = path.string();
 
-	_customIcons.push_back({ pathStr, a_exportName, a_exportNameUndiscovered, a_iconScale });
+	_customIcons.push_back(
+		{ pathStr, a_exportName, a_exportNameUndiscovered, a_iconScale, a_hideFromHUD });
+}
+
+void ImportManager::HideFromHUD(RE::MARKER_TYPE a_markerType)
+{
+	_hideFromHUD.insert(a_markerType);
 }
 
 void ImportManager::InstallHooks()
@@ -85,6 +93,34 @@ void ImportManager::SetupHUDMenu(RE::GFxMovieView* a_movieView)
 	if (!_baseIndex) {
 		_baseIndex = static_cast<std::uint32_t>(iconCount);
 		MapConfigLoader::GetSingleton()->UpdateMarkers(_baseIndex);
+	}
+
+	auto movieDataResource = movieDef->GetMovieDataResource();
+	auto movieDataDef =
+		movieDataResource->GetResourceType() == RE::GFxResource::ResourceType::kMovieDataDef
+		? static_cast<RE::GFxMovieDataDef*>(movieDataResource)
+		: nullptr;
+
+	if (movieDataDef) {
+		auto& loadTaskData =
+			static_cast<RE::GFxMovieDataDef*>(movieDef->GetMovieDataResource())->loadTaskData;
+
+		auto& allocator = loadTaskData->allocator;
+		auto alloc = [&allocator](std::size_t a_size) { return allocator.Alloc(a_size); };
+
+		for (auto& markerType : _hideFromHUD) {
+			auto markerIndex = static_cast<std::uint32_t>(markerType);
+
+			if (markerIndex > _baseIndex) {
+				continue;
+			}
+
+			RemoveFrame(movieDataDef, compassMarker, locationMarkers + markerIndex - 1);
+			RemoveFrame(movieDataDef, compassMarker, undiscoveredMarkers + markerIndex - 1);
+		}
+	}
+	else {
+		logger::debug("Failed to hide HUD icons"sv);
 	}
 
 	auto movieDefImpl = GFxUtil::GetMovieDefImpl(movieDef);
@@ -251,6 +287,21 @@ void ImportManager::SetupMapMenu(RE::GFxMovieView* a_movieView)
 			a_movieView->SetVariable("Map.MapMarker.MARKER_BASE_SIZE", newSize);
 		}
 	}
+}
+
+void ImportManager::RemoveFrame(
+	RE::GFxMovieDataDef* a_movieDataDef,
+	RE::GFxSpriteDef* a_marker,
+	std::uint32_t a_frame)
+{
+	auto& loadTaskData = a_movieDataDef->loadTaskData;
+	auto& allocator = loadTaskData->allocator;
+	auto alloc = [&allocator](std::size_t a_size) { return allocator.Alloc(a_size); };
+
+	auto removeObject = TagFactory::MakeRemoveObject(alloc, 1);
+	assert(removeObject);
+
+	a_marker->frames[a_frame] = TagFactory::MakeTagList(alloc, { removeObject });
 }
 
 bool ImportManager::LoadMovie(

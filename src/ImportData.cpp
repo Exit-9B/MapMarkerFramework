@@ -26,6 +26,7 @@ void ImportData::InsertCustomIcons(
 
 	_numIcons = a_iconInfo.size();
 	_iconScales.reserve(_numIcons);
+	_hideHUD.reserve(_numIcons);
 
 	for (std::size_t i = 0; i < _numIcons; i++) {
 		auto& iconInfo = a_iconInfo[i];
@@ -36,6 +37,7 @@ void ImportData::InsertCustomIcons(
 		}
 
 		_iconScales.push_back(iconInfo.IconScale);
+		_hideHUD.push_back(iconInfo.HideFromHUD);
 	}
 
 	if (obscureUndiscovered) {
@@ -79,23 +81,45 @@ void ImportData::InsertCustomIcons(
 
 		for (std::int32_t i = 0; i < _numIcons; i++) {
 
-			auto placeObject = MakeReplaceObject(alloc, _ids[iconType][i]);
-			assert(placeObject);
+			switch (_menuType) {
+			case MenuType::HUD:
+				if (!_hideHUD[i]) {
+					auto placeObject = MakeReplaceObject(alloc, _ids[iconType][i]);
+					assert(placeObject);
 
-			auto doAction = MakeMarkerFrameAction(alloc, _iconScales[i]);
-			assert(doAction);
+					_marker->frames[insertPos + i] =
+						TagFactory::MakeTagList(alloc, { placeObject });
+				}
+				else {
+					auto removeObject = MakeRemoveObject(alloc);
+					assert(removeObject);
 
-			_marker->frames[insertPos + i] = MakeTagList(alloc, { placeObject, doAction });
+					_marker->frames[insertPos + i] =
+						TagFactory::MakeTagList(alloc, { removeObject });
+				}
+				break;
+
+			case MenuType::Map:
+				auto placeObject = MakeReplaceObject(alloc, _ids[iconType][i]);
+				assert(placeObject);
+
+				auto doAction = MakeMarkerFrameAction(alloc, _iconScales[i]);
+				assert(doAction);
+
+				_marker->frames[insertPos + i] =
+					TagFactory::MakeTagList(alloc, { placeObject, doAction });
+				break;
+			}
 		}
 	}
 
 	auto removeObject = TagFactory::MakeRemoveObject(alloc, 1);
-	_marker->frames[a_insertPos + _numIcons] = MakeTagList(alloc, { removeObject });
+	_marker->frames[a_insertPos + _numIcons] = TagFactory::MakeTagList(alloc, { removeObject });
 
 	if (obscureUndiscovered) {
 		auto placeObject = MakeReplaceObject(alloc, _ids[IconTypes::Undiscovered][0]);
 		auto start = a_insertPos + undiscoveredOffset - a_baseCount;
-		_marker->frames[start] = MakeTagList(alloc, { placeObject });
+		_marker->frames[start] = TagFactory::MakeTagList(alloc, { placeObject });
 
 		for (std::int32_t i = 1; i < a_baseCount; i++) {
 			_marker->frames[start + i] = { nullptr, 0 };
@@ -291,6 +315,11 @@ auto ImportData::MakeReplaceObject(AllocateCallback a_alloc, std::uint16_t a_cha
 	return TagFactory::MakePlaceObject(a_alloc, placeObjectData);
 }
 
+auto ImportData::MakeRemoveObject(AllocateCallback a_alloc) -> RE::GFxRemoveObject2*
+{
+	return TagFactory::MakeRemoveObject(a_alloc, 1);
+}
+
 auto ImportData::MakeMarkerFrameAction(AllocateCallback a_alloc, float a_iconScale)
 	-> RE::GASDoAction*
 {
@@ -393,19 +422,4 @@ auto ImportData::MakeMarkerFrameAction(AllocateCallback a_alloc, float a_iconSca
 	assert(bufferData);
 
 	return TagFactory::MakeDoAction(a_alloc, bufferData);
-}
-
-auto ImportData::MakeTagList(
-	AllocateCallback a_alloc,
-	std::initializer_list<RE::GASExecuteTag*> a_tags) -> ExecuteTagList
-{
-	std::size_t size = sizeof(RE::GASExecuteTag*) * a_tags.size();
-	auto tagArray = static_cast<RE::GASExecuteTag**>(a_alloc(size));
-
-	std::copy(a_tags.begin(), a_tags.end(), tagArray);
-
-	return ExecuteTagList{
-		.data = tagArray,
-		.size = static_cast<std::uint32_t>(a_tags.size()),
-	};
 }

@@ -23,6 +23,7 @@ struct IconInfo
 	std::string ExportName;
 	std::string ExportNameUndiscovered;
 	float IconScale;
+	bool HideFromHUD;
 };
 
 class ImportData
@@ -54,13 +55,11 @@ private:
 		AllocateCallback a_alloc,
 		std::uint16_t a_characterId) -> RE::GFxPlaceObjectBase*;
 
+	static auto MakeRemoveObject(AllocateCallback a_alloc) -> RE::GFxRemoveObject2*;
+
 	static auto MakeMarkerFrameAction(
 		AllocateCallback a_alloc,
 		float a_iconScale) -> RE::GASDoAction*;
-
-	static auto MakeTagList(
-		AllocateCallback a_alloc,
-		std::initializer_list<RE::GASExecuteTag*> a_tags) -> ExecuteTagList;
 
 private:
 	struct IconId
@@ -82,4 +81,5 @@ private:
 	std::vector<RE::GFxSpriteDef*> _icons[IconTypes::Total];
 	std::vector<std::uint16_t> _ids[IconTypes::Total];
 	std::vector<float> _iconScales;
+	std::vector<bool> _hideHUD;
 };

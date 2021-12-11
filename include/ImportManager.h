@@ -19,7 +19,10 @@ public:
 		std::filesystem::path a_source,
 		const std::string& a_exportName,
 		const std::string& a_exportNameUndiscovered,
-		float a_iconScale);
+		float a_iconScale,
+		bool a_hideFromHUD);
+
+	void HideFromHUD(RE::MARKER_TYPE a_markerType);
 
 private:
 	ImportManager() = default;
@@ -27,6 +30,11 @@ private:
 	void SetupHUDMenu(RE::GFxMovieView* a_movieView);
 
 	void SetupMapMenu(RE::GFxMovieView* a_movieView);
+
+	static void RemoveFrame(
+		RE::GFxMovieDataDef* a_movieDataDef,
+		RE::GFxSpriteDef* a_marker,
+		std::uint32_t a_frame);
 
 	static bool LoadMovie(
 		RE::BSScaleformManager* a_scaleformManager,
@@ -38,6 +46,8 @@ private:
 
 	std::vector<IconInfo> _customIcons;
 	std::uint32_t _baseIndex = 0;
+
+	std::unordered_set<RE::MARKER_TYPE> _hideFromHUD;
 
 	inline static REL::Relocation<decltype(LoadMovie)> _LoadMovie;
 };

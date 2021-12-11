@@ -89,6 +89,8 @@ void MapConfigLoader::LoadFromFile(
 				scale = 1.0f;
 			}
 
+			auto hideFromHUD = iconDef["hideFromHUD"].asBool();
+
 			auto discoveryMusic = iconDef["discoveryMusic"].asString();
 
 			if (!name.empty() && source.isObject()) {
@@ -109,7 +111,8 @@ void MapConfigLoader::LoadFromFile(
 					path,
 					exportName,
 					exportNameUndiscovered,
-					scale);
+					scale,
+					hideFromHUD);
 
 				_iconNames[name] = _lastIcon++;
 
@@ -123,6 +126,10 @@ void MapConfigLoader::LoadFromFile(
 				if (index) {
 					auto markerType = static_cast<RE::MARKER_TYPE>(index);
 					discoveryMusicManager->SetMusic(markerType, discoveryMusic);
+
+					if (hideFromHUD) {
+						importManager->HideFromHUD(markerType);
+					}
 				}
 			}
 		}
