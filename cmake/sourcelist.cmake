@@ -6,6 +6,7 @@ set(SOURCES ${SOURCES}
     include/Hooks.h
     include/ImportData.h
     include/ImportManager.h
+    include/LocalMapManager.h
     include/MapConfigLoader.h
     include/PCH.h
     include/RE/Ext.h
@@ -51,6 +52,7 @@ set(SOURCES ${SOURCES}
     src/Hooks.cpp
     src/ImportData.cpp
     src/ImportManager.cpp
+    src/LocalMapManager.cpp
     src/MapConfigLoader.cpp
     src/PCH.cpp
     src/Patches.cpp

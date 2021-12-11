@@ -27,11 +27,11 @@ void ImportManager::InstallHooks()
 {
 	auto& trampoline = SKSE::GetTrampoline();
 
-	std::uintptr_t hud_hook = Offset::HUDMenu::Ctor.address() + 0xFE;
-	_LoadMovie = trampoline.write_call<5>(hud_hook, LoadMovie);
+	auto hud_hook = REL::Relocation<std::uintptr_t>{ Offset::HUDMenu::Ctor, 0xFE };
+	_LoadMovie = trampoline.write_call<5>(hud_hook.address(), LoadMovie);
 
-	std::uintptr_t map_hook = Offset::MapMenu::Ctor.address() + 0x1D1;
-	trampoline.write_call<5>(map_hook, LoadMovie);
+	auto map_hook = REL::Relocation<std::uintptr_t>{ Offset::MapMenu::Ctor, 0x1D1 };
+	trampoline.write_call<5>(map_hook.address(), LoadMovie);
 
 	logger::info("Installed hooks for movie setup"sv);
 }

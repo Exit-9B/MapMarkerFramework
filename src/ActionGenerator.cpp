@@ -57,6 +57,14 @@ void ActionGenerator::Push([[maybe_unused]] std::nullptr_t a_value)
 	_temporary.WriteUI8(2);
 }
 
+void ActionGenerator::Push(std::int32_t a_value)
+{
+	_temporary.WriteUI8(0x96);
+	_temporary.WriteUI16(5);
+	_temporary.WriteUI8(7);
+	_temporary.WriteSI32(a_value);
+}
+
 void ActionGenerator::Push(float a_value)
 {
 	_temporary.WriteUI8(0x96);

@@ -54,7 +54,7 @@ private:
 		AllocateCallback a_alloc,
 		std::uint16_t a_characterId) -> RE::GFxPlaceObjectBase*;
 
-	static auto MakeMarkerScaleAction(
+	static auto MakeMarkerFrameAction(
 		AllocateCallback a_alloc,
 		float a_iconScale) -> RE::GASDoAction*;
 

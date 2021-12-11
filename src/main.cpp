@@ -1,4 +1,5 @@
 #include "Hooks.h"
+#include "LocalMapManager.h"
 #include "MapConfigLoader.h"
 #include "Settings.h"
 
@@ -57,7 +58,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 
 	SKSE::Init(a_skse);
 
-	SKSE::AllocTrampoline(14);
+	SKSE::AllocTrampoline(28);
 
 	Hooks::Install();
 
@@ -69,6 +70,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 			switch (a_msg->type) {
 			case SKSE::MessagingInterface::kDataLoaded:
 				MapConfigLoader::GetSingleton()->LoadAll();
+				LocalMapManager::GetSingleton()->Load();
 				break;
 			}
 		});

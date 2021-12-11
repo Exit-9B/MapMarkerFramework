@@ -25,4 +25,6 @@ private:
 	std::unordered_map<std::string, std::string> _discoveryMusic;
 
 	std::unordered_map<RE::TESObjectREFR*, MapMarker> _mapMarkers;
+	std::unordered_map<RE::BGSListForm*, MapMarker> _vendorMarkers;
+	std::unordered_map<RE::BGSKeyword*, MapMarker> _locTypeMarkers;
 };

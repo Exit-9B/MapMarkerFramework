@@ -43,6 +43,11 @@ void SWFOutputStream::WriteSI16(std::int16_t a_value)
 	WriteUI16(static_cast<std::uint16_t>(a_value));
 }
 
+void SWFOutputStream::WriteSI32(std::int32_t a_value)
+{
+	WriteUI32(static_cast<std::uint32_t>(a_value));
+}
+
 void SWFOutputStream::WriteUI8(std::uint8_t a_value)
 {
 	Write(a_value);

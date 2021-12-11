@@ -82,15 +82,10 @@ void ImportData::InsertCustomIcons(
 			auto placeObject = MakeReplaceObject(alloc, _ids[iconType][i]);
 			assert(placeObject);
 
-			if (_menuType == MenuType::Map && _iconScales[i] != 1.0f) {
-				auto doAction = MakeMarkerScaleAction(alloc, _iconScales[i]);
-				assert(doAction);
+			auto doAction = MakeMarkerFrameAction(alloc, _iconScales[i]);
+			assert(doAction);
 
-				_marker->frames[insertPos + i] = MakeTagList(alloc, { placeObject, doAction });
-			}
-			else {
-				_marker->frames[insertPos + i] = MakeTagList(alloc, { placeObject });
-			}
+			_marker->frames[insertPos + i] = MakeTagList(alloc, { placeObject, doAction });
 		}
 	}
 
@@ -296,7 +291,7 @@ auto ImportData::MakeReplaceObject(AllocateCallback a_alloc, std::uint16_t a_cha
 	return TagFactory::MakePlaceObject(a_alloc, placeObjectData);
 }
 
-auto ImportData::MakeMarkerScaleAction(AllocateCallback a_alloc, float a_iconScale)
+auto ImportData::MakeMarkerFrameAction(AllocateCallback a_alloc, float a_iconScale)
 	-> RE::GASDoAction*
 {
 	struct Action : ActionGenerator
@@ -304,6 +299,7 @@ auto ImportData::MakeMarkerScaleAction(AllocateCallback a_alloc, float a_iconSca
 		Action(float a_iconScale)
 		{
 			Label endLbl;
+			Label doorLbl;
 
 			// var marker = this._parent._parent._parent;
 			Push("marker");
@@ -328,29 +324,64 @@ auto ImportData::MakeMarkerScaleAction(AllocateCallback a_alloc, float a_iconSca
 			Not();
 			If(endLbl);
 
-			// marker._width *= a_iconScale;
+			// if (marker._parent._parent instanceof Map.LocalMap)
 			Push("marker");
 			GetVariable();
-			Push("_width");
-			Push("marker");
-			GetVariable();
-			Push("_width");
+			Push("_parent");
 			GetMember();
-			Push(a_iconScale);
-			Multiply();
+			Push("_parent");
+			GetMember();
+			Push("Map");
+			GetVariable();
+			Push("LocalMap");
+			GetMember();
+			InstanceOf();
+			Not();
+			If(doorLbl);
+
+			// marker.IconClip._alpha = 100;
+			Push("marker");
+			GetVariable();
+			Push("IconClip");
+			GetMember();
+			Push("_alpha");
+			Push(100);
 			SetMember();
 
-			// marker._height *= a_iconScale;
+			// marker._iconName = "DoorMarker";
 			Push("marker");
 			GetVariable();
-			Push("_height");
-			Push("marker");
-			GetVariable();
-			Push("_height");
-			GetMember();
-			Push(a_iconScale);
-			Multiply();
+			Push("_iconName");
+			Push("DoorMarker");
 			SetMember();
+
+			L(doorLbl);
+
+			if (a_iconScale != 1.0f) {
+				// marker._width *= a_iconScale;
+				Push("marker");
+				GetVariable();
+				Push("_width");
+				Push("marker");
+				GetVariable();
+				Push("_width");
+				GetMember();
+				Push(a_iconScale);
+				Multiply();
+				SetMember();
+
+				// marker._height *= a_iconScale;
+				Push("marker");
+				GetVariable();
+				Push("_height");
+				Push("marker");
+				GetVariable();
+				Push("_height");
+				GetMember();
+				Push(a_iconScale);
+				Multiply();
+				SetMember();
+			}
 
 			// endLbl:
 			L(endLbl);

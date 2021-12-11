@@ -3,6 +3,7 @@
 #include "DiscoveryMusicManager.h"
 #include "FormUtil.h"
 #include "ImportManager.h"
+#include "LocalMapManager.h"
 #include "Settings.h"
 #include <json/json.h>
 
@@ -136,38 +137,59 @@ void MapConfigLoader::LoadFromFile(
 			}
 
 			auto refID = mapMarker["refID"].asString();
-
-			if (refID.empty()) {
-				logger::warn(
-					"Map marker missing reference ID in {}"sv,
-					a_fileName);
-				continue;
-			}
-
-			auto markerRef = skyrim_cast<RE::TESObjectREFR*>(
-				FormUtil::GetFormFromIdentifier(refID));
-
-			if (!markerRef) {
-				logger::warn(
-					"'{}' did not correspond to a valid Object Reference in {}"sv,
-					refID,
-					a_fileName);
-				continue;
-			}
+			auto vendorList = mapMarker["vendorList"].asString();
 
 			auto icon = mapMarker["icon"].asUInt();
 			auto markerType = static_cast<RE::MARKER_TYPE>(icon);
 
 			auto iconName = mapMarker["iconName"].asString();
 
-			if (!iconName.empty()) {
-				_mapMarkers[markerRef] = iconName;
+			if (refID.empty() && vendorList.empty()) {
+				logger::warn(
+					"Map marker missing reference ID / location type / vendor list in {}"sv,
+					a_fileName);
+
+				continue;
 			}
-			else if (markerType != RE::MARKER_TYPE::kNone) {
-				_mapMarkers[markerRef] = markerType;
-			}
-			else {
+
+			if (markerType == RE::MARKER_TYPE::kNone && iconName.empty()) {
 				logger::warn("Map marker missing icon data in {}"sv, a_fileName);
+			}
+
+			MapMarker markerKey = markerType;
+			if (!iconName.empty()) {
+				markerKey = iconName;
+			}
+
+			if (!refID.empty()) {
+				auto markerRef = skyrim_cast<RE::TESObjectREFR*>(
+					FormUtil::GetFormFromIdentifier(refID));
+
+				if (!markerRef) {
+					logger::warn(
+						"'{}' did not correspond to a valid Object Reference in {}"sv,
+						refID,
+						a_fileName);
+
+					continue;
+				}
+
+				_mapMarkers[markerRef] = markerKey;
+			}
+			else if (!vendorList.empty()) {
+				auto buySellList = skyrim_cast<RE::BGSListForm*>(
+					FormUtil::GetFormFromIdentifier(vendorList));
+
+				if (!buySellList) {
+					logger::warn(
+						"'{}' did not correspond to a valid Form List in {}"sv,
+						vendorList,
+						a_fileName);
+
+					continue;
+				}
+
+				_vendorMarkers[buySellList] = markerKey;
 			}
 		}
 	}
@@ -176,10 +198,11 @@ void MapConfigLoader::LoadFromFile(
 void MapConfigLoader::UpdateMarkers(std::uint32_t a_customIconIndex) const
 {
 	for (auto& [markerRef, marker] : _mapMarkers) {
-		auto markerType = ResolveMarker(marker, a_customIconIndex);
 		if (!markerRef) {
 			continue;
 		}
+
+		auto markerType = ResolveMarker(marker, a_customIconIndex);
 
 		if (markerType == RE::MARKER_TYPE::kNone) {
 			auto location = markerRef->GetEditorLocation();
@@ -202,6 +225,25 @@ void MapConfigLoader::UpdateMarkers(std::uint32_t a_customIconIndex) const
 				DiscoveryMusicManager::GetSingleton()->SetMusic(markerType, it->second);
 			}
 		}
+	}
+
+	for (auto& [vendorList, marker] : _vendorMarkers) {
+		if (!vendorList) {
+			continue;
+		}
+
+		auto markerType = ResolveMarker(marker, a_customIconIndex);
+
+		if (markerType == RE::MARKER_TYPE::kNone) {
+			logger::warn(
+				"Vendor Form List ({:08X}) failed to resolve custom icon"sv,
+				vendorList->GetFormID());
+
+			continue;
+		}
+
+		auto localMapManager = LocalMapManager::GetSingleton();
+		localMapManager->AddVendorMarker(vendorList, markerType);
 	}
 }
 

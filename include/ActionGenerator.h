@@ -18,6 +18,7 @@ protected:
 	// Stack operations
 
 	void Push(std::nullptr_t a_value);
+	void Push(std::int32_t a_value);
 	void Push(float a_value);
 	void Push(double a_value);
 	void Push(const std::string& a_value, bool a_useConstantPool = true);

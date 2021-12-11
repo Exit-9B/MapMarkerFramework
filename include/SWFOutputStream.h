@@ -13,6 +13,7 @@ public:
 	void WriteSB(std::int32_t a_nBits, std::int64_t a_value);
 	void WriteFB(std::int32_t a_nBits, float a_value);
 	void WriteSI16(std::int16_t a_value);
+	void WriteSI32(std::int32_t a_value);
 	void WriteUI8(std::uint8_t a_value);
 	void WriteUI16(std::uint16_t a_value);
 	void WriteUI32(std::uint32_t a_value);

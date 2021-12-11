@@ -62,6 +62,12 @@ namespace Offset
 		inline constexpr REL::ID ProcessMessage(51653);
 	}
 
+	namespace LocalMapMenu
+	{
+		// SkyrimSE 1.6.323.0: 0x90B530
+		inline constexpr REL::ID PopulateData(52971);
+	}
+
 	namespace MapMenu
 	{
 		// SkyrimSE 1.6.318.0: 0x9128F0
