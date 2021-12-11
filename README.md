@@ -45,6 +45,10 @@ Here is an example of what a config that assigns a new marker to Riverwood could
   ]
 }
 ```
+The `name` property is a name that you provide for each icon so that it can be assigned to via the
+`iconName` property. It is recommended to add a mod-specific prefix to your names to avoid
+conflicts, just like with editor IDs, scripts, and asset paths.
+
 The `source` property contains information about the .swf file where markers should be read from.
 It is recommended to use the `resources\` subdirectory for your resources for organizational
 purposes. The export names are defined within the .swf file. You should provide exactly 2 names,
@@ -89,6 +93,39 @@ The `index` property identifies the icon by index. These can be found by decompi
 
 The `discoveryMusic` and `hideFromHUD` properties are the same as for new markers. Note that the
 `scale` property is NOT supported when editing existing icons.
+
+### Local Map Markers
+You can customize the markers that appear for doors on the local map.
+
+Here is an example of a possible local map config:
+```json
+{
+  "mapMarkers": [
+    {
+      "locType": "LocTypeInn",
+      "iconName": "InnMarker"
+    },
+    {
+      "vendorList": "Skyrim.esm|937A0", // VendorItemsTailor
+      "iconName": "TailorMarker"
+    },
+    {
+      "location": "Skyrim.esm|2263B", // Riften Fishery
+      "iconName": "FishMarker"
+    }
+  ]
+}
+```
+The `location` property specifies a specific location to assign an icon to.
+
+The `vendorList` property specifies a vendor's buy/sell list. The specified icon will be used for
+any location containing a vendor that uses that list.
+
+The `locType` property specifies a location keyword, by name. The specified icon will be used for
+any location that uses that keyword.
+
+Each of the above properties take priority from least to most specific. `location` has a higher
+priority than `vendorList`, which has a higher priority than `locType`.
 
 ## Build Instructions
 ### Requirements
