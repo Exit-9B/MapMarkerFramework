@@ -125,7 +125,10 @@ void MapConfigLoader::LoadFromFile(
 
 				if (index) {
 					auto markerType = static_cast<RE::MARKER_TYPE>(index);
-					discoveryMusicManager->SetMusic(markerType, discoveryMusic);
+
+					if (!discoveryMusic.empty()) {
+						discoveryMusicManager->SetMusic(markerType, discoveryMusic);
+					}
 
 					if (hideFromHUD) {
 						importManager->HideFromHUD(markerType);
