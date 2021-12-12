@@ -159,6 +159,21 @@ void ActionGenerator::Not()
 
 // Control flow
 
+void ActionGenerator::Jump(Label& a_label)
+{
+	std::int16_t programCounter = GetPos() + 5;
+
+	_temporary.WriteUI8(0x99);
+	_temporary.WriteUI16(2);
+
+	if (!a_label.defined) {
+		std::int16_t writePos = GetPos();
+		AddUndefinedLabel(a_label, writePos, programCounter);
+	}
+
+	_temporary.WriteSI16(a_label.loc - programCounter);
+}
+
 void ActionGenerator::If(Label& a_label)
 {
 	std::int16_t programCounter = GetPos() + 5;

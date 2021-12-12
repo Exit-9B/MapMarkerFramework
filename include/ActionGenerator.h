@@ -40,6 +40,7 @@ protected:
 
 	// Control flow
 
+	void Jump(Label& a_label);
 	void If(Label& a_label);
 	void L(Label& a_label);
 

@@ -384,6 +384,9 @@ auto ImportData::MakeMarkerFrameAction(AllocateCallback a_alloc, float a_iconSca
 			Push("DoorMarker");
 			SetMember();
 
+			// else
+			Jump(endLbl);
+
 			L(doorLbl);
 
 			if (a_iconScale != 1.0f) {
