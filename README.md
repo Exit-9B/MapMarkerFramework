@@ -24,7 +24,7 @@ the discovered marker and one for the undiscovered marker. See the
 for information on how to create the icons and .swf files.
 
 Here is an example of what a config that assigns a new marker to Riverwood could look like:
-```json
+```jsonc
 {
   "iconDefinitions": [
     {
@@ -69,7 +69,7 @@ the HUD compass. This is useful for icons such as arrows which would not make se
 It is also possible to make some edits to existing markers within the config.
 
 Here is an example of some possible edits:
-```json
+```jsonc
 {
   "iconDefinitions": [
     {
@@ -98,7 +98,7 @@ The `discoveryMusic` and `hideFromHUD` properties are the same as for new marker
 You can customize the markers that appear for doors on the local map.
 
 Here is an example of a possible local map config:
-```json
+```jsonc
 {
   "mapMarkers": [
     {
@@ -124,8 +124,8 @@ any location containing a vendor that uses that list.
 The `locType` property specifies a location keyword, by name. The specified icon will be used for
 any location that uses that keyword.
 
-Each of the above properties take priority from least to most specific. `location` has a higher
-priority than `vendorList`, which has a higher priority than `locType`.
+Each of the above properties take priority from least to most specific. `location` has the highest
+priority, followed by `vendorList`, and then `locType`.
 
 ## Build Instructions
 ### Requirements
