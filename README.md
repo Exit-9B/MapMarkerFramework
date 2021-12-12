@@ -11,11 +11,11 @@ The canonical implementation of this framework, which it was created for, is
 Jelidity.
 
 ## Usage
-CMMF reads config files from the `Data\MapMarkers\` directory in order to apply its changes. Each
-active plugin in your load order can have a config file associated with it, using the same stem
-filename and a .json extension. For example, the config file corresponding to the Skyrim.esm plugin
-is `Data\MapMarkers\Skyrim.json`. Conflicts between these config files are resolved based on the
-plugin load order, just like plugin contents, .bsa files, and .ini files.
+The SKSE plugin reads config files from the `Data\MapMarkers\` directory in order to apply its
+changes. Each active plugin in your load order can have a config file associated with it, using the
+same stem filename and a .json extension. For example, the config file corresponding to the
+Skyrim.esm plugin is `Data\MapMarkers\Skyrim.json`. Conflicts between these config files are
+resolved based on the plugin load order, just like plugin contents, .bsa files, and .ini files.
 
 ### Adding New Markers
 In order to add new icons, you first need to create a .swf file that exports 2 sprites, one for
