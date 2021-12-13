@@ -170,18 +170,3 @@ auto TagFactory::MakeDoAction(
 
 	return doAction;
 }
-
-auto TagFactory::MakeTagList(
-	AllocateCallback a_alloc,
-	std::initializer_list<RE::GASExecuteTag*> a_tags) -> RE::GFxTimelineDef::ExecuteTagList
-{
-	std::size_t size = sizeof(RE::GASExecuteTag*) * a_tags.size();
-	auto tagArray = static_cast<RE::GASExecuteTag**>(a_alloc(size));
-
-	std::copy(a_tags.begin(), a_tags.end(), tagArray);
-
-	return RE::GFxTimelineDef::ExecuteTagList{
-		.data = tagArray,
-		.size = static_cast<std::uint32_t>(a_tags.size()),
-	};
-}

@@ -48,8 +48,4 @@ public:
 
 	static auto MakeDoAction(AllocateCallback a_alloc, RE::GASActionBufferData* a_data)
 		-> RE::GASDoAction*;
-
-	static auto MakeTagList(
-		AllocateCallback a_alloc,
-		std::initializer_list<RE::GASExecuteTag*> a_tags) -> RE::GFxTimelineDef::ExecuteTagList;
 };

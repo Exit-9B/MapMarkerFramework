@@ -8,6 +8,7 @@ set(SOURCES ${SOURCES}
     include/ImportManager.h
     include/LocalMapManager.h
     include/MapConfigLoader.h
+    include/MapMarkerUtil.h
     include/PCH.h
     include/RE/Ext.h
     include/RE/G/GASActionBufferData.h
@@ -54,6 +55,7 @@ set(SOURCES ${SOURCES}
     src/ImportManager.cpp
     src/LocalMapManager.cpp
     src/MapConfigLoader.cpp
+    src/MapMarkerUtil.cpp
     src/PCH.cpp
     src/Patches.cpp
     src/SWFOutputStream.cpp

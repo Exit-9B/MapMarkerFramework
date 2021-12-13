@@ -51,16 +51,6 @@ private:
 	void ImportMovies();
 	void ImportResources();
 
-	static auto MakeReplaceObject(
-		AllocateCallback a_alloc,
-		std::uint16_t a_characterId) -> RE::GFxPlaceObjectBase*;
-
-	static auto MakeRemoveObject(AllocateCallback a_alloc) -> RE::GFxRemoveObject2*;
-
-	static auto MakeMarkerFrameAction(
-		AllocateCallback a_alloc,
-		float a_iconScale) -> RE::GASDoAction*;
-
 private:
 	struct IconId
 	{

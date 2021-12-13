@@ -36,6 +36,11 @@ private:
 		RE::GFxSpriteDef* a_marker,
 		std::uint32_t a_frame);
 
+	static void FixDoorMarker(
+		RE::GFxMovieDataDef* a_movieDataDef,
+		RE::GFxSpriteDef* a_marker,
+		std::uint32_t a_frame);
+
 	static bool LoadMovie(
 		RE::BSScaleformManager* a_scaleformManager,
 		RE::IMenu* a_menu,

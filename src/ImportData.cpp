@@ -1,6 +1,6 @@
 #include "ImportData.h"
-#include "ActionGenerator.h"
 #include "GFxUtil.h"
+#include "MapMarkerUtil.h"
 #include "Settings.h"
 #include "TagFactory.h"
 
@@ -84,42 +84,45 @@ void ImportData::InsertCustomIcons(
 			switch (_menuType) {
 			case MenuType::HUD:
 				if (!_hideHUD[i]) {
-					auto placeObject = MakeReplaceObject(alloc, _ids[iconType][i]);
+					auto placeObject = MapMarkerUtil::MakeReplaceObject(alloc, _ids[iconType][i]);
 					assert(placeObject);
 
 					_marker->frames[insertPos + i] =
-						TagFactory::MakeTagList(alloc, { placeObject });
+						GFxUtil::MakeTagList(alloc, { placeObject });
 				}
 				else {
-					auto removeObject = MakeRemoveObject(alloc);
+					auto removeObject = MapMarkerUtil::MakeRemoveObject(alloc);
 					assert(removeObject);
 
 					_marker->frames[insertPos + i] =
-						TagFactory::MakeTagList(alloc, { removeObject });
+						GFxUtil::MakeTagList(alloc, { removeObject });
 				}
 				break;
 
 			case MenuType::Map:
-				auto placeObject = MakeReplaceObject(alloc, _ids[iconType][i]);
+				auto placeObject = MapMarkerUtil::MakeReplaceObject(alloc, _ids[iconType][i]);
 				assert(placeObject);
 
-				auto doAction = MakeMarkerFrameAction(alloc, _iconScales[i]);
+				auto doAction = MapMarkerUtil::MakeMarkerFrameAction(alloc, _iconScales[i]);
 				assert(doAction);
 
 				_marker->frames[insertPos + i] =
-					TagFactory::MakeTagList(alloc, { placeObject, doAction });
+					GFxUtil::MakeTagList(alloc, { placeObject, doAction });
 				break;
 			}
 		}
 	}
 
-	auto removeObject = TagFactory::MakeRemoveObject(alloc, 1);
-	_marker->frames[a_insertPos + _numIcons] = TagFactory::MakeTagList(alloc, { removeObject });
+	auto removeObject = MapMarkerUtil::MakeRemoveObject(alloc);
+	_marker->frames[a_insertPos + _numIcons] = GFxUtil::MakeTagList(alloc, { removeObject });
 
 	if (obscureUndiscovered) {
-		auto placeObject = MakeReplaceObject(alloc, _ids[IconTypes::Undiscovered][0]);
+		auto placeObject = MapMarkerUtil::MakeReplaceObject(
+			alloc,
+			_ids[IconTypes::Undiscovered][0]);
+
 		auto start = a_insertPos + undiscoveredOffset - a_baseCount;
-		_marker->frames[start] = TagFactory::MakeTagList(alloc, { placeObject });
+		_marker->frames[start] = GFxUtil::MakeTagList(alloc, { placeObject });
 
 		for (std::int32_t i = 1; i < a_baseCount; i++) {
 			_marker->frames[start + i] = { nullptr, 0 };
@@ -298,132 +301,4 @@ void ImportData::ImportResources()
 		newResources.begin(),
 		newResources.end(),
 		std::addressof(importData.resourceArray[start]));
-}
-
-auto ImportData::MakeReplaceObject(AllocateCallback a_alloc, std::uint16_t a_characterId)
-	-> RE::GFxPlaceObjectBase*
-{
-	RE::GFxPlaceObjectData placeObjectData{};
-	placeObjectData.placeFlags.set(
-		RE::GFxPlaceFlags::kMove,
-		RE::GFxPlaceFlags::kHasCharacter,
-		RE::GFxPlaceFlags::kHasMatrix);
-	placeObjectData.depth = 1;
-	placeObjectData.characterId = RE::GFxResourceID{ a_characterId };
-	placeObjectData.matrix.SetMatrix(0.8f, 0.0f, 0.0f, 0.8f, 0.0f, 0.0f);
-
-	return TagFactory::MakePlaceObject(a_alloc, placeObjectData);
-}
-
-auto ImportData::MakeRemoveObject(AllocateCallback a_alloc) -> RE::GFxRemoveObject2*
-{
-	return TagFactory::MakeRemoveObject(a_alloc, 1);
-}
-
-auto ImportData::MakeMarkerFrameAction(AllocateCallback a_alloc, float a_iconScale)
-	-> RE::GASDoAction*
-{
-	struct Action : ActionGenerator
-	{
-		Action(float a_iconScale)
-		{
-			Label endLbl;
-			Label doorLbl;
-
-			// var marker = this._parent._parent._parent;
-			Push("marker");
-			Push("this");
-			GetVariable();
-			Push("_parent");
-			GetMember();
-			Push("_parent");
-			GetMember();
-			Push("_parent");
-			GetMember();
-			DefineLocal();
-
-			// if (marker instanceof Map.MapMarker)
-			Push("marker");
-			GetVariable();
-			Push("Map");
-			GetVariable();
-			Push("MapMarker");
-			GetMember();
-			InstanceOf();
-			Not();
-			If(endLbl);
-
-			// if (marker._parent._parent instanceof Map.LocalMap)
-			Push("marker");
-			GetVariable();
-			Push("_parent");
-			GetMember();
-			Push("_parent");
-			GetMember();
-			Push("Map");
-			GetVariable();
-			Push("LocalMap");
-			GetMember();
-			InstanceOf();
-			Not();
-			If(doorLbl);
-
-			// marker.IconClip._alpha = 100;
-			Push("marker");
-			GetVariable();
-			Push("IconClip");
-			GetMember();
-			Push("_alpha");
-			Push(100);
-			SetMember();
-
-			// marker._iconName = "DoorMarker";
-			Push("marker");
-			GetVariable();
-			Push("_iconName");
-			Push("DoorMarker");
-			SetMember();
-
-			// else
-			Jump(endLbl);
-
-			// doorLbl:
-			L(doorLbl);
-
-			if (a_iconScale != 1.0f) {
-				// marker._width *= a_iconScale;
-				Push("marker");
-				GetVariable();
-				Push("_width");
-				Push("marker");
-				GetVariable();
-				Push("_width");
-				GetMember();
-				Push(a_iconScale);
-				Multiply();
-				SetMember();
-
-				// marker._height *= a_iconScale;
-				Push("marker");
-				GetVariable();
-				Push("_height");
-				Push("marker");
-				GetVariable();
-				Push("_height");
-				GetMember();
-				Push(a_iconScale);
-				Multiply();
-				SetMember();
-			}
-
-			// endLbl:
-			L(endLbl);
-		}
-	};
-	Action action{ a_iconScale };
-	action.Ready();
-	auto bufferData = action.GetCode();
-	assert(bufferData);
-
-	return TagFactory::MakeDoAction(a_alloc, bufferData);
 }

@@ -1,8 +1,8 @@
 #include "ImportManager.h"
 #include "MapConfigLoader.h"
 #include "GFxUtil.h"
+#include "MapMarkerUtil.h"
 #include "Settings.h"
-#include "TagFactory.h"
 
 namespace chrono = std::chrono;
 
@@ -95,37 +95,30 @@ void ImportManager::SetupHUDMenu(RE::GFxMovieView* a_movieView)
 		MapConfigLoader::GetSingleton()->UpdateMarkers(_baseIndex);
 	}
 
-	auto movieDataResource = movieDef->GetMovieDataResource();
-	auto movieDataDef =
-		movieDataResource->GetResourceType() == RE::GFxResource::ResourceType::kMovieDataDef
-		? static_cast<RE::GFxMovieDataDef*>(movieDataResource)
-		: nullptr;
+	auto movieDefImpl = GFxUtil::GetMovieDefImpl(movieDef);
+	if (!movieDefImpl) {
+		return;
+	}
 
+	auto movieDataDef = movieDefImpl->bindTaskData->movieDataResource;
 	if (movieDataDef) {
-		auto& loadTaskData =
-			static_cast<RE::GFxMovieDataDef*>(movieDef->GetMovieDataResource())->loadTaskData;
-
+		auto& loadTaskData = movieDataDef->loadTaskData;
 		auto& allocator = loadTaskData->allocator;
 		auto alloc = [&allocator](std::size_t a_size) { return allocator.Alloc(a_size); };
 
 		for (auto& markerType : _hideFromHUD) {
-			auto markerIndex = static_cast<std::uint32_t>(markerType);
+			auto index = static_cast<std::uint32_t>(markerType) - 1;
 
-			if (markerIndex > _baseIndex) {
+			if (index >= _baseIndex) {
 				continue;
 			}
 
-			RemoveFrame(movieDataDef, compassMarker, locationMarkers + markerIndex - 1);
-			RemoveFrame(movieDataDef, compassMarker, undiscoveredMarkers + markerIndex - 1);
+			RemoveFrame(movieDataDef, compassMarker, locationMarkers + index);
+			RemoveFrame(movieDataDef, compassMarker, undiscoveredMarkers + index);
 		}
 	}
 	else {
 		logger::debug("Failed to hide HUD icons"sv);
-	}
-
-	auto movieDefImpl = GFxUtil::GetMovieDefImpl(movieDef);
-	if (!movieDefImpl) {
-		return;
 	}
 
 	if (!_customIcons.empty()) {
@@ -222,6 +215,24 @@ void ImportManager::SetupMapMenu(RE::GFxMovieView* a_movieView)
 		return;
 	}
 
+	auto movieDataDef = movieDefImpl->bindTaskData->movieDataResource;
+	if (movieDataDef) {
+		auto& loadTaskData = movieDataDef->loadTaskData;
+		auto& allocator = loadTaskData->allocator;
+		auto alloc = [&allocator](std::size_t a_size) { return allocator.Alloc(a_size); };
+
+		for (std::uint32_t index = 0; index < _baseIndex; index++) {
+			if (index >= 60 && index < 67)
+				continue;
+
+			FixDoorMarker(movieDataDef, mapMarker, discovered + index);
+			FixDoorMarker(movieDataDef, mapMarker, undiscovered + index);
+		}
+	}
+	else {
+		logger::debug("Failed to apply door transparency fix"sv);
+	}
+
 	if (!_customIcons.empty()) {
 		ImportData importData{
 			movieDefImpl,
@@ -298,10 +309,27 @@ void ImportManager::RemoveFrame(
 	auto& allocator = loadTaskData->allocator;
 	auto alloc = [&allocator](std::size_t a_size) { return allocator.Alloc(a_size); };
 
-	auto removeObject = TagFactory::MakeRemoveObject(alloc, 1);
+	auto removeObject = MapMarkerUtil::MakeRemoveObject(alloc);
 	assert(removeObject);
 
-	a_marker->frames[a_frame] = TagFactory::MakeTagList(alloc, { removeObject });
+	a_marker->frames[a_frame] = GFxUtil::MakeTagList(alloc, { removeObject });
+}
+
+void ImportManager::FixDoorMarker(
+	RE::GFxMovieDataDef* a_movieDataDef,
+	RE::GFxSpriteDef* a_marker,
+	std::uint32_t a_frame)
+{
+	auto& loadTaskData = a_movieDataDef->loadTaskData;
+	auto& allocator = loadTaskData->allocator;
+	auto alloc = [&allocator](std::size_t a_size) { return allocator.Alloc(a_size); };
+
+	auto doAction = MapMarkerUtil::MakeMarkerFrameAction(alloc);
+
+	a_marker->frames[a_frame] = GFxUtil::ExtendTagList(
+		alloc,
+		a_marker->frames[a_frame],
+		{ doAction });
 }
 
 bool ImportManager::LoadMovie(
