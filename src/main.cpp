@@ -47,6 +47,7 @@ extern "C" DLLEXPORT constinit auto SKSEPlugin_Version =
 	v.PluginName(Version::PROJECT);
 	v.AuthorName("Parapets"sv);
 	v.UsesAddressLibrary(true);
+	v.MinimumRequiredXSEVersion(REL::Version{ 2, 1, 4 });
 	return v;
 }();
 
