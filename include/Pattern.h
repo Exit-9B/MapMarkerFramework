@@ -50,7 +50,7 @@ struct PatternImpl
 		return true;
 	}
 
-	static constexpr auto parse_byte(char a_char1, char a_char2) -> optional_byte
+	static constexpr optional_byte parse_byte(char a_char1, char a_char2)
 	{
 		if (a_char1 == '?' && a_char2 == '?') {
 			return std::nullopt;
