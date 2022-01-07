@@ -14,12 +14,14 @@ struct PatternImpl
 		optional_byte& operator=(std::nullopt_t)
 		{
 			has_value = false;
+			return *this;
 		}
 
 		optional_byte& operator=(std::uint8_t a_value)
 		{
 			has_value = true;
 			value = a_value;
+			return *this;
 		}
 
 		bool has_value = false;
