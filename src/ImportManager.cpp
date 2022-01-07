@@ -2,6 +2,7 @@
 #include "MapConfigLoader.h"
 #include "GFxUtil.h"
 #include "MapMarkerUtil.h"
+#include "Patches.h"
 #include "Settings.h"
 
 namespace chrono = std::chrono;
@@ -33,15 +34,16 @@ void ImportManager::HideFromHUD(RE::MARKER_TYPE a_markerType)
 
 void ImportManager::InstallHooks()
 {
-	auto& trampoline = SKSE::GetTrampoline();
+	bool success = Patch::WriteLoadHUDPatch(LoadMovie_HUD, _LoadMovie_HUD);
+	if (!success) {
+		logger::critical("Necessary patch failed to install, aborting"sv);
+		return;
+	}
 
-	auto hud_hook = REL::Relocation<std::uintptr_t>{ Offset::HUDMenu::Ctor, 0xFF };
-	_LoadMovie = trampoline.write_call<5>(hud_hook.address(), LoadMovie);
-
-	auto map_hook = REL::Relocation<std::uintptr_t>{ Offset::MapMenu::Ctor, 0x1D1 };
-	trampoline.write_call<5>(map_hook.address(), LoadMovie);
-
-	logger::info("Installed hooks for movie setup"sv);
+	success = Patch::WriteLoadMapPatch(LoadMovie_Map, _LoadMovie_Map);
+	if (success) {
+		logger::info("Installed hooks for movie setup"sv);
+	}
 }
 
 void ImportManager::SetupHUDMenu(RE::GFxMovieView* a_movieView)
@@ -332,7 +334,7 @@ void ImportManager::FixDoorMarker(
 		{ doAction });
 }
 
-bool ImportManager::LoadMovie(
+bool ImportManager::LoadMovie_HUD(
 	RE::BSScaleformManager* a_scaleformManager,
 	RE::IMenu* a_menu,
 	RE::GPtr<RE::GFxMovieView>& a_movieView,
@@ -340,7 +342,7 @@ bool ImportManager::LoadMovie(
 	RE::GFxMovieView::ScaleModeType a_scaleMode,
 	float a_backgroundAlpha)
 {
-	auto result = _LoadMovie(
+	auto result = _LoadMovie_HUD(
 		a_scaleformManager,
 		a_menu,
 		a_movieView,
@@ -352,12 +354,38 @@ bool ImportManager::LoadMovie(
 
 		auto startTime = chrono::steady_clock::now();
 
-		if (strcmp(a_menuName, "HUDMenu") == 0) {
-			GetSingleton()->SetupHUDMenu(a_movieView.get());
-		}
-		else if (strcmp(a_menuName, "Map") == 0) {
-			GetSingleton()->SetupMapMenu(a_movieView.get());
-		}
+		GetSingleton()->SetupHUDMenu(a_movieView.get());
+
+		auto endTime = chrono::steady_clock::now();
+		auto elapsedMs = chrono::duration_cast<chrono::milliseconds>(endTime - startTime);
+
+		logger::info("Set up {} in {} ms"sv, a_menuName, elapsedMs.count());
+	}
+
+	return result;
+}
+
+bool ImportManager::LoadMovie_Map(
+	RE::BSScaleformManager* a_scaleformManager,
+	RE::IMenu* a_menu,
+	RE::GPtr<RE::GFxMovieView>& a_movieView,
+	const char* a_menuName,
+	RE::GFxMovieView::ScaleModeType a_scaleMode,
+	float a_backgroundAlpha)
+{
+	auto result = _LoadMovie_Map(
+		a_scaleformManager,
+		a_menu,
+		a_movieView,
+		a_menuName,
+		a_scaleMode,
+		a_backgroundAlpha);
+
+	if (result) {
+
+		auto startTime = chrono::steady_clock::now();
+
+		GetSingleton()->SetupMapMenu(a_movieView.get());
 
 		auto endTime = chrono::steady_clock::now();
 		auto elapsedMs = chrono::duration_cast<chrono::milliseconds>(endTime - startTime);

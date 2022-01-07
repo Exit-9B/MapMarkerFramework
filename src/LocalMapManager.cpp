@@ -1,4 +1,5 @@
 #include "LocalMapManager.h"
+#include "Patches.h"
 
 auto LocalMapManager::GetSingleton() -> LocalMapManager*
 {
@@ -8,10 +9,7 @@ auto LocalMapManager::GetSingleton() -> LocalMapManager*
 
 void LocalMapManager::InstallHooks()
 {
-	auto& trampoline = SKSE::GetTrampoline();
-
-	auto door_hook = REL::Relocation<std::uintptr_t>{ Offset::LocalMapMenu::PopulateData, 0x941 };
-	_GetSpecialMarkerType = trampoline.write_call<5>(door_hook.address(), GetSpecialMarkerType);
+	Patch::WriteLocalMapPatch(GetSpecialMarkerType, _GetSpecialMarkerType);
 
 	logger::info("Installed hooks for local map"sv);
 }

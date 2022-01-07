@@ -47,7 +47,6 @@ extern "C" DLLEXPORT constinit auto SKSEPlugin_Version =
 	v.PluginName(Version::PROJECT);
 	v.AuthorName("Parapets"sv);
 	v.UsesAddressLibrary(true);
-	v.MinimumRequiredXSEVersion(REL::Version{ 2, 1, 4 });
 	return v;
 }();
 
@@ -59,7 +58,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 
 	SKSE::Init(a_skse);
 
-	SKSE::AllocTrampoline(28);
+	SKSE::AllocTrampoline(42);
 
 	Hooks::Install();
 

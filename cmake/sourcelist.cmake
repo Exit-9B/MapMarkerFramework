@@ -43,8 +43,10 @@ set(SOURCES ${SOURCES}
     include/RE/G/GWaitCondition.h
     include/RE/OffsetsExt.h
     include/Patches.h
+    include/Pattern.h
     include/SWFOutputStream.h
     include/Settings.h
+    include/SpecialMarkerData.h
     include/TagFactory.h
     src/ActionGenerator.cpp
     src/DiscoveryMusicManager.cpp

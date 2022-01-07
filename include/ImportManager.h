@@ -41,7 +41,15 @@ private:
 		RE::GFxSpriteDef* a_marker,
 		std::uint32_t a_frame);
 
-	static bool LoadMovie(
+	static bool LoadMovie_HUD(
+		RE::BSScaleformManager* a_scaleformManager,
+		RE::IMenu* a_menu,
+		RE::GPtr<RE::GFxMovieView>& a_movieView,
+		const char* a_fileName,
+		RE::GFxMovieView::ScaleModeType a_scaleMode,
+		float a_backgroundAlpha);
+
+	static bool LoadMovie_Map(
 		RE::BSScaleformManager* a_scaleformManager,
 		RE::IMenu* a_menu,
 		RE::GPtr<RE::GFxMovieView>& a_movieView,
@@ -54,5 +62,6 @@ private:
 
 	std::unordered_set<RE::MARKER_TYPE> _hideFromHUD;
 
-	inline static REL::Relocation<decltype(LoadMovie)> _LoadMovie;
+	inline static REL::Relocation<decltype(LoadMovie_HUD)> _LoadMovie_HUD;
+	inline static REL::Relocation<decltype(LoadMovie_Map)> _LoadMovie_Map;
 };
