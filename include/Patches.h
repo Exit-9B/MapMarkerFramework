@@ -21,9 +21,9 @@ namespace Patch
 
 	bool WriteLoadMapPatch(LoadMovieFunc* a_newCall, REL::Relocation<LoadMovieFunc>& a_origCall);
 
-	using GetSpecialMarkerFunc = auto(SpecialMarkerData* a_data) -> RE::MARKER_TYPE;
+	using GetSpecialMarkerFunc = auto(SpecialMarkerData*) -> RE::MARKER_TYPE;
 
 	bool WriteLocalMapPatch(
-		GetSpecialMarkerFunc a_newCall,
+		GetSpecialMarkerFunc* a_newCall,
 		REL::Relocation<GetSpecialMarkerFunc>& a_origCall);
 }

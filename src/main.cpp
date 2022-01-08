@@ -3,63 +3,59 @@
 #include "MapConfigLoader.h"
 #include "Settings.h"
 
-void InitLogger()
+namespace
 {
-	static bool initialized = false;
-	if (!initialized) {
-		initialized = true;
-	}
-	else {
-		return;
-	}
-
+	void InitializeLog()
+	{
 #ifndef NDEBUG
-	auto sink = std::make_shared<spdlog::sinks::msvc_sink_mt>();
+		auto sink = std::make_shared<spdlog::sinks::msvc_sink_mt>();
 #else
-	auto path = logger::log_directory();
-	if (!path) {
-		return;
-	}
+		auto path = logger::log_directory();
+		if (!path) {
+			RE::stl::report_and_fail("Failed to find standard logging directory"sv);
+		}
 
-	*path /= fmt::format("{}.log"sv, Version::PROJECT);
-	auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path->string(), true);
+		*path /= fmt::format("{}.log"sv, Version::PROJECT);
+		auto sink = std::make_shared<spdlog::sinks::basic_file_sink_mt>(path->string(), true);
 #endif
 
-	auto log = std::make_shared<spdlog::logger>("global log"s, std::move(sink));
-
 #ifndef NDEBUG
-	log->set_level(spdlog::level::trace);
+		const auto level = spdlog::level::trace;
+		log->set_level(spdlog::level::trace);
 #else
-	log->set_level(spdlog::level::info);
-	log->flush_on(spdlog::level::warn);
+		const auto level = spdlog::level::info;
 #endif
 
-	spdlog::set_default_logger(std::move(log));
-	spdlog::set_pattern("%s(%#): [%^%l%$] %v"s);
+		auto log = std::make_shared<spdlog::logger>("global log"s, std::move(sink));
+		log->set_level(level);
+		log->flush_on(level);
 
-	logger::info(FMT_STRING("{} v{}"), Version::PROJECT, Version::NAME);
+		spdlog::set_default_logger(std::move(log));
+		spdlog::set_pattern("%s(%#): [%^%l%$] %v"s);
+	}
 }
 
-extern "C" DLLEXPORT constinit auto SKSEPlugin_Version =
-[]() {
+extern "C" DLLEXPORT constinit auto SKSEPlugin_Version = []()
+{
 	SKSE::PluginVersionData v{};
-	v.pluginVersion = Version::MAJOR;
+
+	v.PluginVersion(Version::MAJOR);
 	v.PluginName(Version::PROJECT);
 	v.AuthorName("Parapets"sv);
+
 	v.UsesAddressLibrary(true);
+
 	return v;
 }();
 
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_skse)
 {
-	InitLogger();
-
-	logger::info("{} loaded", Version::PROJECT);
+	InitializeLog();
+	logger::info("{} v{}", Version::PROJECT, Version::NAME);
 
 	SKSE::Init(a_skse);
 
 	SKSE::AllocTrampoline(42);
-
 	Hooks::Install();
 
 	Settings::GetSingleton()->LoadSettings();

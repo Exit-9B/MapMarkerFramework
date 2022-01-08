@@ -86,7 +86,7 @@ bool Patch::WriteLoadMapPatch(LoadMovieFunc* a_newCall, REL::Relocation<LoadMovi
 }
 
 bool Patch::WriteLocalMapPatch(
-	GetSpecialMarkerFunc a_newCall,
+	GetSpecialMarkerFunc* a_newCall,
 	REL::Relocation<GetSpecialMarkerFunc>& a_origCall)
 {
 	auto& trampoline = SKSE::GetTrampoline();

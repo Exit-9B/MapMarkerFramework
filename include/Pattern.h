@@ -1,6 +1,6 @@
 #pragma once
 
-template <std::size_t N>
+template <std::size_t N> requires (N % 3 == 0)
 struct PatternImpl
 {
 	static constexpr auto Size = N / 3;
