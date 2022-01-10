@@ -22,7 +22,6 @@ namespace
 
 #ifndef NDEBUG
 		const auto level = spdlog::level::trace;
-		log->set_level(spdlog::level::trace);
 #else
 		const auto level = spdlog::level::info;
 #endif
@@ -52,7 +51,7 @@ extern "C" DLLEXPORT constinit auto SKSEPlugin_Version = []()
 extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_skse)
 {
 	InitializeLog();
-	logger::info("{} v{}", Plugin::NAME, Plugin::VERSION.string());
+	logger::info("{} v{}"sv, Plugin::NAME, Plugin::VERSION.string());
 
 	SKSE::Init(a_skse);
 
@@ -73,8 +72,6 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 				break;
 			}
 		});
-
-	spdlog::default_logger()->flush();
 
 	return true;
 }
