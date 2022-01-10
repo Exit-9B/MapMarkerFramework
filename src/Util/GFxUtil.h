@@ -1,0 +1,16 @@
+#pragma once
+
+namespace Util
+{
+	using AllocateCallback = std::function<void*(std::size_t)>;
+
+	auto GetGFxMovieDefImpl(RE::GFxMovieDef* a_movieDef) -> RE::GFxMovieDefImpl*;
+
+	auto MakeTagList(AllocateCallback a_alloc, std::initializer_list<RE::GASExecuteTag*> a_tags)
+		-> RE::GFxTimelineDef::ExecuteTagList;
+
+	auto ExtendTagList(
+		AllocateCallback a_alloc,
+		RE::GFxTimelineDef::ExecuteTagList& a_tagList,
+		std::initializer_list<RE::GASExecuteTag*> a_tags) -> RE::GFxTimelineDef::ExecuteTagList;
+}

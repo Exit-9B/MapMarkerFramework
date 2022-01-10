@@ -1,52 +1,55 @@
 ﻿---
 AccessModifierOffset: -4
-AlignAfterOpenBracket: AlwaysBreak
+AlignAfterOpenBracket: DontAlign
 AlignConsecutiveAssignments: 'false'
-AlignConsecutiveDeclarations: 'false'
+AlignConsecutiveBitFields: 'false'
+AlignConsecutiveDeclarations: 'true'
 AlignConsecutiveMacros: 'false'
 AlignEscapedNewlines: Left
-AlignOperands: DontAlign
+AlignOperands: Align
 AlignTrailingComments: 'true'
 AllowAllArgumentsOnNextLine: 'false'
 AllowAllConstructorInitializersOnNextLine: 'false'
 AllowAllParametersOfDeclarationOnNextLine: 'false'
-AllowShortBlocksOnASingleLine: Never
+AllowShortBlocksOnASingleLine: Empty
 AllowShortCaseLabelsOnASingleLine: 'false'
-AllowShortFunctionsOnASingleLine: InlineOnly
+AllowShortEnumsOnASingleLine: 'true'
+AllowShortFunctionsOnASingleLine: All
 AllowShortIfStatementsOnASingleLine: Never
-AllowShortLambdasOnASingleLine: Empty
-AllowShortLoopsOnASingleLine: 'false'
+AllowShortLambdasOnASingleLine: All
+AllowShortLoopsOnASingleLine: 'true'
 AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: 'true'
 AlwaysBreakTemplateDeclarations: 'Yes'
-BinPackArguments: 'false'
-BinPackParameters: 'false'
+BinPackArguments: 'true'
+BinPackParameters: 'true'
 BraceWrapping:
     AfterCaseLabel: 'true'
     AfterClass: 'true'
     AfterControlStatement: 'false'
     AfterEnum: 'true'
-    AfterExternBlock: 'true'
     AfterFunction: 'true'
     AfterNamespace: 'true'
     AfterStruct: 'true'
     AfterUnion: 'true'
+    AfterExternBlock: 'true'
     BeforeCatch: 'false'
-    BeforeElse: 'true'
-    BeforeLambdaBody: 'true'
+    BeforeElse: 'false'
+    BeforeLambdaBody: 'false'
+    BeforeWhile: 'false'
     IndentBraces: 'false'
-    SplitEmptyFunction: 'true'
-    SplitEmptyNamespace: 'true'
-    SplitEmptyRecord: 'true'
+    SplitEmptyFunction: 'false'
+    SplitEmptyRecord: 'false'
+    SplitEmptyNamespace: 'false'
 BreakBeforeBinaryOperators: None
 BreakBeforeBraces: Custom
-BreakBeforeTernaryOperators: 'true'
+BreakBeforeTernaryOperators: 'false'
 BreakConstructorInitializers: AfterColon
 BreakInheritanceList: AfterColon
 BreakStringLiterals: 'true'
-ColumnLimit: 99
+ColumnLimit: 0
 CompactNamespaces: 'false'
-ConstructorInitializerAllOnOneLineOrOnePerLine: 'true'
+ConstructorInitializerAllOnOneLineOrOnePerLine: 'false'
 ConstructorInitializerIndentWidth: 4
 ContinuationIndentWidth: 4
 Cpp11BracedListStyle: 'false'
@@ -55,20 +58,19 @@ DerivePointerAlignment: 'false'
 DisableFormat: 'false'
 FixNamespaceComments: 'false'
 IncludeBlocks: Preserve
-IndentCaseBlocks: 'false'
+IndentCaseBlocks: 'true'
 IndentCaseLabels: 'false'
+IndentExternBlock: Indent
 IndentGotoLabels: 'false'
-IndentPPDirectives: None
+IndentPPDirectives: AfterHash
 IndentWidth: 4
 IndentWrappedFunctionNames: 'true'
-KeepEmptyLinesAtTheStartOfBlocks: 'true'
+KeepEmptyLinesAtTheStartOfBlocks: 'false'
 Language: Cpp
-MaxEmptyLinesToKeep: 2
+MaxEmptyLinesToKeep: 1
 NamespaceIndentation: All
-PenaltyBreakAssignment: 500
-PenaltyReturnTypeOnItsOwnLine: 1000
 PointerAlignment: Left
-ReflowComments : 'true'
+ReflowComments : 'false'
 SortIncludes: 'true'
 SortUsingDeclarations: 'true'
 SpaceAfterCStyleCast: 'false'
@@ -90,9 +92,9 @@ SpacesInConditionalStatement: 'false'
 SpacesInContainerLiterals: 'true'
 SpacesInParentheses: 'false'
 SpacesInSquareBrackets: 'false'
-Standard: c++17
+Standard: Latest
 TabWidth: 4
 UseCRLF: 'true'
-UseTab: ForContinuationAndIndentation
+UseTab: AlignWithSpaces
 
 ...
