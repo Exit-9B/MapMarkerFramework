@@ -104,13 +104,6 @@ void ImportManager::SetupHUDMenu(RE::GFxMovieView* a_movieView)
 
 	auto movieDataDef = movieDefImpl->bindTaskData->movieDataResource;
 	if (movieDataDef) {
-		auto& loadTaskData = movieDataDef->loadTaskData;
-		auto& allocator = loadTaskData->allocator;
-		auto alloc = [&allocator](std::size_t a_size)
-		{
-			return allocator.Alloc(a_size);
-		};
-
 		for (auto& markerType : _hideFromHUD) {
 			auto index = static_cast<std::uint32_t>(markerType) - 1;
 
@@ -218,13 +211,6 @@ void ImportManager::SetupMapMenu(RE::GFxMovieView* a_movieView)
 
 	auto movieDataDef = movieDefImpl->bindTaskData->movieDataResource;
 	if (movieDataDef) {
-		auto& loadTaskData = movieDataDef->loadTaskData;
-		auto& allocator = loadTaskData->allocator;
-		auto alloc = [&allocator](std::size_t a_size)
-		{
-			return allocator.Alloc(a_size);
-		};
-
 		for (std::uint32_t index = 0; index < _baseIndex; index++) {
 			if (index >= 60 && index < 67)
 				continue;
@@ -305,17 +291,10 @@ void ImportManager::RemoveFrame(
 	RE::GFxSpriteDef* a_marker,
 	std::uint32_t a_frame)
 {
-	auto& loadTaskData = a_movieDataDef->loadTaskData;
-	auto& allocator = loadTaskData->allocator;
-	auto alloc = [&allocator](std::size_t a_size)
-	{
-		return allocator.Alloc(a_size);
-	};
-
-	auto removeObject = Util::MakeRemoveObject(alloc);
+	auto removeObject = Util::MakeRemoveObject(a_movieDataDef);
 	assert(removeObject);
 
-	a_marker->frames[a_frame] = Util::MakeTagList(alloc, { removeObject });
+	a_marker->frames[a_frame] = Util::MakeTagList(a_movieDataDef, { removeObject });
 }
 
 void ImportManager::FixDoorMarker(
@@ -323,17 +302,10 @@ void ImportManager::FixDoorMarker(
 	RE::GFxSpriteDef* a_marker,
 	std::uint32_t a_frame)
 {
-	auto& loadTaskData = a_movieDataDef->loadTaskData;
-	auto& allocator = loadTaskData->allocator;
-	auto alloc = [&allocator](std::size_t a_size)
-	{
-		return allocator.Alloc(a_size);
-	};
-
-	auto doAction = Util::MakeMarkerFrameAction(alloc);
+	auto doAction = Util::MakeMarkerFrameAction(a_movieDataDef);
 
 	a_marker->frames[a_frame] = Util::ExtendTagList(
-		alloc,
+		a_movieDataDef,
 		a_marker->frames[a_frame],
 		{ doAction });
 }

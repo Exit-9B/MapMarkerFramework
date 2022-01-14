@@ -17,11 +17,13 @@ namespace Util
 		}
 	}
 
-	auto MakeTagList(AllocateCallback a_alloc, std::initializer_list<RE::GASExecuteTag*> a_tags)
-		-> RE::GFxTimelineDef::ExecuteTagList
+	auto MakeTagList(
+		RE::GFxMovieDataDef* a_movieData,
+		std::initializer_list<RE::GASExecuteTag*> a_tags) -> RE::GFxTimelineDef::ExecuteTagList
 	{
 		std::size_t size = sizeof(RE::GASExecuteTag*) * a_tags.size();
-		auto tagArray = static_cast<RE::GASExecuteTag**>(a_alloc(size));
+		auto tagArray = static_cast<RE::GASExecuteTag**>(
+			a_movieData->loadTaskData->allocator.Alloc(size));
 
 		std::copy(a_tags.begin(), a_tags.end(), tagArray);
 
@@ -32,12 +34,13 @@ namespace Util
 	}
 
 	auto ExtendTagList(
-		AllocateCallback a_alloc,
+		RE::GFxMovieDataDef* a_movieData,
 		RE::GFxTimelineDef::ExecuteTagList& a_tagList,
 		std::initializer_list<RE::GASExecuteTag*> a_tags) -> RE::GFxTimelineDef::ExecuteTagList
 	{
 		std::size_t size = sizeof(RE::GASExecuteTag*) * (a_tagList.size + a_tags.size());
-		auto tagArray = static_cast<RE::GASExecuteTag**>(a_alloc(size));
+		auto tagArray = static_cast<RE::GASExecuteTag**>(
+			a_movieData->loadTaskData->allocator.Alloc(size));
 
 		std::copy_n(a_tagList.data, a_tagList.size, tagArray);
 		std::copy(a_tags.begin(), a_tags.end(), tagArray + a_tagList.size);

@@ -4,7 +4,7 @@
 
 namespace Util
 {
-	auto MakeReplaceObject(AllocateCallback a_alloc, std::uint16_t a_characterId)
+	auto MakeReplaceObject(RE::GFxMovieDataDef* a_movieData, std::uint16_t a_characterId)
 		-> RE::GFxPlaceObjectBase*
 	{
 		RE::GFxPlaceObjectData placeObjectData{};
@@ -16,15 +16,15 @@ namespace Util
 		placeObjectData.characterId = RE::GFxResourceID{ a_characterId };
 		placeObjectData.matrix.SetMatrix(0.8f, 0.0f, 0.0f, 0.8f, 0.0f, 0.0f);
 
-		return SWF::TagFactory::MakePlaceObject(a_alloc, placeObjectData);
+		return SWF::TagFactory::MakePlaceObject(a_movieData, placeObjectData);
 	}
 
-	auto MakeRemoveObject(AllocateCallback a_alloc) -> RE::GFxRemoveObject2*
+	auto MakeRemoveObject(RE::GFxMovieDataDef* a_movieData) -> RE::GFxRemoveObject2*
 	{
-		return SWF::TagFactory::MakeRemoveObject(a_alloc, 1);
+		return SWF::TagFactory::MakeRemoveObject(a_movieData, 1);
 	}
 
-	auto MakeMarkerFrameAction(AllocateCallback a_alloc, float a_iconScale) -> RE::GASDoAction*
+	auto MakeMarkerFrameAction(RE::GFxMovieDataDef* a_movieData, float a_iconScale) -> RE::GASDoAction*
 	{
 		struct Action : SWF::ActionGenerator
 		{
@@ -125,6 +125,6 @@ namespace Util
 		auto bufferData = action.GetCode();
 		assert(bufferData);
 
-		return SWF::TagFactory::MakeDoAction(a_alloc, bufferData);
+		return SWF::TagFactory::MakeDoAction(a_movieData, bufferData);
 	}
 }

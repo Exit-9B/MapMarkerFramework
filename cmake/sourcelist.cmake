@@ -1,46 +1,9 @@
 set(SOURCES ${SOURCES}
     src/PCH/PCH.cpp
     src/PCH/PCH.h
-    src/RE/Ext.h
-    src/RE/G/GASActionBufferData.h
-    src/RE/G/GASDoAction.h
-    src/RE/G/GASExecuteTag.h
-    src/RE/G/GAcquireInterface.h
-    src/RE/G/GArrayConstPolicy.h
-    src/RE/G/GEvent.h
-    src/RE/G/GFxCharacterDef.h
-    src/RE/G/GFxInitImportActions.h
-    src/RE/G/GFxLoadUpdateSync.h
-    src/RE/G/GFxMovieDataDef.h
-    src/RE/G/GFxMovieDefBindStates.h
-    src/RE/G/GFxMovieDefImpl.h
-    src/RE/G/GFxPlaceObject.h
-    src/RE/G/GFxPlaceObject2.h
-    src/RE/G/GFxPlaceObject2a.h
-    src/RE/G/GFxPlaceObject3.h
-    src/RE/G/GFxPlaceObjectBase.h
-    src/RE/G/GFxPlaceObjectUnpacked.h
-    src/RE/G/GFxRemoveObject.h
-    src/RE/G/GFxRemoveObject2.h
-    src/RE/G/GFxResourceLib.h
-    src/RE/G/GFxResourceReport.h
-    src/RE/G/GFxSpriteDef.h
-    src/RE/G/GFxStateBagImpl.h
-    src/RE/G/GFxTimelineDef.h
-    src/RE/G/GHashUncached.h
-    src/RE/G/GHashsetNodeEntry.h
-    src/RE/G/GMutex.h
-    src/RE/G/GWaitCondition.h
-    src/RE/G/GWaitable.h
-    src/RE/OffsetsExt.h
-    src/RE/S/SpecialMarkerData.h
+    src/RE/Offset.Ext.h
+    src/RE/SpecialMarkerData.h
     src/REL/Pattern.h
-    src/SWF/ActionGenerator.cpp
-    src/SWF/ActionGenerator.h
-    src/SWF/SWFOutputStream.cpp
-    src/SWF/SWFOutputStream.h
-    src/SWF/TagFactory.cpp
-    src/SWF/TagFactory.h
     src/Util/FormUtil.cpp
     src/Util/FormUtil.h
     src/Util/GFxUtil.cpp

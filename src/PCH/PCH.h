@@ -2,11 +2,11 @@
 
 #pragma warning(push, 0)
 #include <RE/Skyrim.h>
+#include <RE/Skyrim.Flash.h>
 #include <REL/Relocation.h>
 #include <SKSE/SKSE.h>
 
-#include "RE/Ext.h"
-#include "RE/OffsetsExt.h"
+#include "RE/Offset.Ext.h"
 #include "REL/Pattern.h"
 
 #ifdef NDEBUG

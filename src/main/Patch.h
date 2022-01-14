@@ -1,5 +1,7 @@
 #pragma once
 
+#include "RE/SpecialMarkerData.h"
+
 namespace Patch
 {
 	using AssignMusicCallback = auto(RE::BSFixedString*, RE::MARKER_TYPE) -> RE::BSFixedString*;
@@ -19,7 +21,7 @@ namespace Patch
 
 	bool WriteLoadMapPatch(LoadMovieFunc* a_newCall, REL::Relocation<LoadMovieFunc>& a_origCall);
 
-	using GetSpecialMarkerFunc = auto(SpecialMarkerData*) -> RE::MARKER_TYPE;
+	using GetSpecialMarkerFunc = auto(RE::SpecialMarkerData*) -> RE::MARKER_TYPE;
 
 	bool WriteLocalMapPatch(
 		GetSpecialMarkerFunc* a_newCall,

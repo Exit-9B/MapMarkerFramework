@@ -1,5 +1,7 @@
 #pragma once
 
+#include "RE/SpecialMarkerData.h"
+
 class LocalMapManager
 {
 public:
@@ -21,7 +23,7 @@ public:
 private:
 	LocalMapManager() = default;
 
-	static RE::MARKER_TYPE GetSpecialMarkerType(SpecialMarkerData* a_data);
+	static RE::MARKER_TYPE GetSpecialMarkerType(RE::SpecialMarkerData* a_data);
 	RE::BGSListForm* GetVendorList(RE::BGSLocation* a_location);
 
 	std::unordered_map<RE::BGSLocation*, RE::BGSListForm*> _vendorLists;

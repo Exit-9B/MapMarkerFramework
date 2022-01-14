@@ -29,7 +29,7 @@ private:
 		{ RE::MARKER_TYPE::kCity, DiscoveryMusic::City },
 		{ RE::MARKER_TYPE::kTown, DiscoveryMusic::Town },
 		{ RE::MARKER_TYPE::kCave, DiscoveryMusic::Dungeon },
-		{ RE::MARKER_TYPE::kNordicRuins, DiscoveryMusic::Dungeon },
+		{ RE::MARKER_TYPE::kNordicRuin, DiscoveryMusic::Dungeon },
 		{ RE::MARKER_TYPE::kDwemerRuin, DiscoveryMusic::Dungeon },
 		{ RE::MARKER_TYPE::kDragonLair, DiscoveryMusic::Dungeon },
 		{ RE::MARKER_TYPE::kMine, DiscoveryMusic::Dungeon },

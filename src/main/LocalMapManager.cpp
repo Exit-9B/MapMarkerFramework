@@ -50,13 +50,11 @@ void LocalMapManager::AddVendorMarker(RE::BGSListForm* a_vendorList, RE::MARKER_
 	_vendorMarkers[a_vendorList] = a_marker;
 }
 
-auto LocalMapManager::GetSpecialMarkerType(SpecialMarkerData* a_data) -> RE::MARKER_TYPE
+auto LocalMapManager::GetSpecialMarkerType(RE::SpecialMarkerData* a_data) -> RE::MARKER_TYPE
 {
 	auto type = _GetSpecialMarkerType(a_data);
 
-	constexpr RE::MARKER_TYPE kDoor = static_cast<RE::MARKER_TYPE>(61);
-
-	if (type != kDoor) {
+	if (type != RE::MARKER_TYPE::kDoor) {
 		return type;
 	}
 

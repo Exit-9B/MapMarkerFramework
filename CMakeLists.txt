@@ -91,6 +91,7 @@ target_include_directories(
 
 add_compile_definitions(SKSE_SUPPORT_XBYAK)
 add_subdirectory("external/CommonLibSSE" CommonLibSSE)
+add_subdirectory("external/FlashLibSkyrim" FlashLibSkyrim)
 
 find_package(spdlog REQUIRED CONFIG)
 find_package(xbyak REQUIRED)
@@ -101,6 +102,7 @@ target_link_libraries(
 	${PROJECT_NAME}
 	PRIVATE
 		CommonLibSSE::CommonLibSSE
+		FlashLibSkyrim
 		spdlog::spdlog
 		jsoncpp_static
 )

@@ -63,12 +63,7 @@ void ImportData::InsertCustomIcons(
 	_marker->frameCount += newFrames * 2;
 	_marker->frameLoading += newFrames * 2;
 
-	auto& loadTaskData = _marker->movieData->loadTaskData;
-	auto& allocator = loadTaskData->allocator;
-	auto alloc = [&allocator](std::size_t a_size)
-	{
-		return allocator.Alloc(a_size);
-	};
+	auto& movieData = _marker->movieData;
 
 	for (std::int32_t iconType = 0; iconType < IconTypes::Total; iconType++) {
 
@@ -86,42 +81,44 @@ void ImportData::InsertCustomIcons(
 			switch (_menuType) {
 			case MenuType::HUD:
 				if (!_hideHUD[i]) {
-					auto placeObject = Util::MakeReplaceObject(alloc, _ids[iconType][i]);
+					auto placeObject = Util::MakeReplaceObject(movieData, _ids[iconType][i]);
 					assert(placeObject);
 
-					_marker->frames[insertPos + i] = Util::MakeTagList(alloc, { placeObject });
+					_marker->frames[insertPos + i] = Util::MakeTagList(movieData, { placeObject });
 				}
 				else {
-					auto removeObject = Util::MakeRemoveObject(alloc);
+					auto removeObject = Util::MakeRemoveObject(movieData);
 					assert(removeObject);
 
-					_marker->frames[insertPos + i] = Util::MakeTagList(alloc, { removeObject });
+					_marker->frames[insertPos + i] = Util::MakeTagList(
+						movieData,
+						{ removeObject });
 				}
 				break;
 
 			case MenuType::Map:
-				auto placeObject = Util::MakeReplaceObject(alloc, _ids[iconType][i]);
+				auto placeObject = Util::MakeReplaceObject(movieData, _ids[iconType][i]);
 				assert(placeObject);
 
-				auto doAction = Util::MakeMarkerFrameAction(alloc, _iconScales[i]);
+				auto doAction = Util::MakeMarkerFrameAction(movieData, _iconScales[i]);
 				assert(doAction);
 
 				_marker->frames[insertPos + i] = Util::MakeTagList(
-					alloc,
+					movieData,
 					{ placeObject, doAction });
 				break;
 			}
 		}
 	}
 
-	auto removeObject = Util::MakeRemoveObject(alloc);
-	_marker->frames[a_insertPos + _numIcons] = Util::MakeTagList(alloc, { removeObject });
+	auto removeObject = Util::MakeRemoveObject(movieData);
+	_marker->frames[a_insertPos + _numIcons] = Util::MakeTagList(movieData, { removeObject });
 
 	if (obscureUndiscovered) {
-		auto placeObject = Util::MakeReplaceObject(alloc, _ids[IconTypes::Undiscovered][0]);
+		auto placeObject = Util::MakeReplaceObject(movieData, _ids[IconTypes::Undiscovered][0]);
 
 		auto start = a_insertPos + undiscoveredOffset - a_baseCount;
-		_marker->frames[start] = Util::MakeTagList(alloc, { placeObject });
+		_marker->frames[start] = Util::MakeTagList(movieData, { placeObject });
 
 		for (std::int32_t i = 1; i < a_baseCount; i++) {
 			_marker->frames[start + i] = { nullptr, 0 };
@@ -171,13 +168,8 @@ void ImportData::LoadIcons()
 void ImportData::ImportMovies()
 {
 	auto& bindTaskData = _targetMovie->bindTaskData;
-	auto& loadTaskData = bindTaskData->movieDataResource->loadTaskData;
-
-	auto& allocator = loadTaskData->allocator;
-	auto alloc = [&allocator](std::size_t a_size)
-	{
-		return allocator.Alloc(a_size);
-	};
+	auto& movieData = bindTaskData->movieDataResource;
+	auto& loadTaskData = movieData->loadTaskData;
 
 	auto& importedMovies = bindTaskData->importedMovies;
 	std::size_t numImportedMovies = importedMovies.GetSize();
@@ -190,11 +182,11 @@ void ImportData::ImportMovies()
 	}
 
 	std::size_t arraySize = sizeof(RE::GASExecuteTag*) * _importedMovies.size();
-	auto tagList = static_cast<RE::GASExecuteTag**>(allocator.Alloc(arraySize));
+	auto tagList = static_cast<RE::GASExecuteTag**>(loadTaskData->allocator.Alloc(arraySize));
 	for (std::size_t i = 0, size = _importedMovies.size(); i < size; i++) {
 		auto movie = numImportedMovies + i;
 		tagList[i] = SWF::TagFactory::MakeInitImportActions(
-			alloc,
+			movieData,
 			static_cast<std::uint32_t>(movie));
 	}
 
@@ -216,8 +208,6 @@ void ImportData::ImportResources()
 	auto& loadTaskData = bindTaskData->movieDataResource->loadTaskData;
 	auto& resources = loadTaskData->resources;
 
-	auto& allocator = loadTaskData->allocator;
-
 	std::uint16_t nextId = 0;
 	std::vector<ImportedResource> newResources;
 
@@ -232,11 +222,12 @@ void ImportData::ImportResources()
 
 		std::uint32_t movieIndex = _movieIndices.at(sourcePath);
 
-		auto importInfo = new (allocator.Alloc(sizeof(RE::GFxImportNode))) RE::GFxImportNode{
-			.filename = sourcePath.data(),
-			.frame = static_cast<std::uint32_t>(loadTaskData->importFrames.GetSize()),
-			.movieIndex = movieIndex,
-		};
+		auto importInfo = new (loadTaskData->allocator.Alloc(sizeof(RE::GFxImportNode)))
+			RE::GFxImportNode{
+				.filename = sourcePath.data(),
+				.frame = static_cast<std::uint32_t>(loadTaskData->importFrames.GetSize()),
+				.movieIndex = movieIndex,
+			};
 
 		for (auto& iconId : iconIds) {
 			RE::GFxResourceID resourceId;

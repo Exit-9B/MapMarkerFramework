@@ -2,13 +2,11 @@
 
 namespace Util
 {
-	using AllocateCallback = std::function<void*(std::size_t)>;
-
-	auto MakeReplaceObject(AllocateCallback a_alloc, std::uint16_t a_characterId)
+	auto MakeReplaceObject(RE::GFxMovieDataDef* a_movieData, std::uint16_t a_characterId)
 		-> RE::GFxPlaceObjectBase*;
 
-	auto MakeRemoveObject(AllocateCallback a_alloc) -> RE::GFxRemoveObject2*;
+	auto MakeRemoveObject(RE::GFxMovieDataDef* a_movieData) -> RE::GFxRemoveObject2*;
 
-	auto MakeMarkerFrameAction(AllocateCallback a_alloc, float a_iconScale = 1.0f)
+	auto MakeMarkerFrameAction(RE::GFxMovieDataDef* a_movieData, float a_iconScale = 1.0f)
 		-> RE::GASDoAction*;
 }
