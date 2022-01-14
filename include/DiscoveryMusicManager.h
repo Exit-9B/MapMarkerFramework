@@ -11,6 +11,12 @@ namespace DiscoveryMusic
 class DiscoveryMusicManager
 {
 public:
+	~DiscoveryMusicManager() = default;
+	DiscoveryMusicManager(const DiscoveryMusicManager&) = delete;
+	DiscoveryMusicManager(DiscoveryMusicManager&&) = delete;
+	DiscoveryMusicManager& operator=(const DiscoveryMusicManager&) = delete;
+	DiscoveryMusicManager& operator=(DiscoveryMusicManager&&) = delete;
+
 	static auto GetSingleton() -> DiscoveryMusicManager*;
 
 	static void InstallHooks();

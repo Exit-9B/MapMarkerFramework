@@ -3,6 +3,12 @@
 class MapConfigLoader
 {
 public:
+	~MapConfigLoader() = default;
+	MapConfigLoader(const MapConfigLoader&) = delete;
+	MapConfigLoader(MapConfigLoader&&) = delete;
+	MapConfigLoader& operator=(const MapConfigLoader&) = delete;
+	MapConfigLoader& operator=(MapConfigLoader&&) = delete;
+
 	static auto GetSingleton() -> MapConfigLoader*;
 
 	void LoadAll();
@@ -10,6 +16,8 @@ public:
 
 private:
 	using MapMarker = std::variant<RE::MARKER_TYPE, std::string>;
+
+	MapConfigLoader() = default;
 
 	void LoadFromFile(
 		const std::string& a_fileName,

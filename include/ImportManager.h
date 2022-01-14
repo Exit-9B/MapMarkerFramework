@@ -5,15 +5,15 @@
 class ImportManager
 {
 public:
-	static auto GetSingleton() -> ImportManager*;
-
-	static void InstallHooks();
-
 	~ImportManager() = default;
 	ImportManager(const ImportManager& other) = delete;
 	ImportManager(ImportManager&& other) = delete;
 	ImportManager& operator=(const ImportManager& other) = delete;
 	ImportManager& operator=(ImportManager&& other) = delete;
+
+	static auto GetSingleton() -> ImportManager*;
+
+	static void InstallHooks();
 
 	void AddCustomIcon(
 		std::filesystem::path a_source,
