@@ -16,6 +16,8 @@ public:
 	static void InstallHooks();
 	void Load();
 
+	auto GetLocalMapMarker(RE::BGSLocation* a_location) -> RE::MARKER_TYPE;
+
 	void AddLocationMarker(RE::BGSLocation* a_location, RE::MARKER_TYPE a_marker);
 	void AddLocTypeMarker(RE::BGSKeyword* a_locType, RE::MARKER_TYPE a_marker);
 	void AddVendorMarker(RE::BGSListForm* a_vendorList, RE::MARKER_TYPE a_marker);

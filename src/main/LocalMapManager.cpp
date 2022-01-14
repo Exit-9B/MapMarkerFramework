@@ -35,6 +35,38 @@ void LocalMapManager::Load()
 	}
 }
 
+auto LocalMapManager::GetLocalMapMarker(RE::BGSLocation* a_location) -> RE::MARKER_TYPE
+{
+	static auto locTypeStore = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("LocTypeStore"sv);
+
+	auto locationMarker = _locationMarkers.find(a_location);
+	if (locationMarker != _locationMarkers.end()) {
+		return locationMarker->second;
+	}
+
+	if (a_location->HasKeyword(locTypeStore)) {
+
+		auto vendorList = GetVendorList(a_location);
+
+		if (vendorList) {
+
+			auto vendorMarker = _vendorMarkers.find(vendorList);
+			if (vendorMarker != _vendorMarkers.end()) {
+				return vendorMarker->second;
+			}
+		}
+	}
+
+	for (auto& [locKeyword, markerType] : _locTypeMarkers) {
+
+		if (a_location->HasKeyword(locKeyword)) {
+			return markerType;
+		}
+	}
+
+	return RE::MARKER_TYPE::kDoor;
+}
+
 void LocalMapManager::AddLocationMarker(RE::BGSLocation* a_location, RE::MARKER_TYPE a_marker)
 {
 	_locationMarkers[a_location] = a_marker;
@@ -69,35 +101,17 @@ auto LocalMapManager::GetSpecialMarkerType(RE::SpecialMarkerData* a_data) -> RE:
 
 	auto linkedDoor = teleport->teleportData->linkedDoor.get();
 	auto location = linkedDoor->GetEditorLocation();
-	auto locTypeStore = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("LocTypeStore"sv);
 
 	if (location) {
-		auto importManager = GetSingleton();
+		auto localMapManager = GetSingleton();
+		auto marker = localMapManager->GetLocalMapMarker(location);
 
-		auto locationMarker = importManager->_locationMarkers.find(location);
-		if (locationMarker != importManager->_locationMarkers.end()) {
-			return locationMarker->second;
-		}
+		auto player = RE::PlayerCharacter::GetSingleton();
+		auto currentLoc = player ? player->currentLocation : nullptr;
+		auto currentLocMarker =
+			currentLoc ? localMapManager->GetLocalMapMarker(currentLoc) : RE::MARKER_TYPE::kDoor;
 
-		if (location->HasKeyword(locTypeStore)) {
-
-			auto vendorList = importManager->GetVendorList(location);
-
-			if (vendorList) {
-
-				auto vendorMarker = importManager->_vendorMarkers.find(vendorList);
-				if (vendorMarker != importManager->_vendorMarkers.end()) {
-					return vendorMarker->second;
-				}
-			}
-		}
-
-		for (auto& [locKeyword, markerType] : importManager->_locTypeMarkers) {
-
-			if (location->HasKeyword(locKeyword)) {
-				return markerType;
-			}
-		}
+		return marker != currentLocMarker ? marker : RE::MARKER_TYPE::kDoor;
 	}
 
 	return type;
