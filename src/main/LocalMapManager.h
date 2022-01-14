@@ -5,6 +5,12 @@
 class LocalMapManager
 {
 public:
+	~LocalMapManager() = default;
+	LocalMapManager(const LocalMapManager&) = delete;
+	LocalMapManager(LocalMapManager&&) = delete;
+	LocalMapManager& operator=(const LocalMapManager&) = delete;
+	LocalMapManager& operator=(LocalMapManager&&) = delete;
+
 	static auto GetSingleton() -> LocalMapManager*;
 
 	static void InstallHooks();
@@ -13,12 +19,6 @@ public:
 	void AddLocationMarker(RE::BGSLocation* a_location, RE::MARKER_TYPE a_marker);
 	void AddLocTypeMarker(RE::BGSKeyword* a_locType, RE::MARKER_TYPE a_marker);
 	void AddVendorMarker(RE::BGSListForm* a_vendorList, RE::MARKER_TYPE a_marker);
-
-	~LocalMapManager() = default;
-	LocalMapManager(const LocalMapManager& other) = delete;
-	LocalMapManager(LocalMapManager&& other) = delete;
-	LocalMapManager& operator=(const LocalMapManager& other) = delete;
-	LocalMapManager& operator=(LocalMapManager&& other) = delete;
 
 private:
 	LocalMapManager() = default;
