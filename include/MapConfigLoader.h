@@ -34,6 +34,6 @@ private:
 
 	std::unordered_map<RE::TESObjectREFR*, MapMarker> _mapMarkers;
 	std::unordered_map<RE::BGSLocation*, MapMarker> _locationMarkers;
-	std::unordered_map<RE::BGSListForm*, MapMarker> _vendorMarkers;
-	std::unordered_map<RE::BGSKeyword*, MapMarker> _locTypeMarkers;
+	tsl::ordered_map<RE::BGSListForm*, MapMarker> _vendorMarkers;
+	tsl::ordered_map<RE::BGSKeyword*, MapMarker> _locTypeMarkers;
 };
