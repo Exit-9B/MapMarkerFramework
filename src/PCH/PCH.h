@@ -1,18 +1,20 @@
 #pragma once
 
+#pragma warning(disable : 5105)
 #pragma warning(push, 0)
 #include <RE/Skyrim.h>
-#include <RE/Skyrim.Flash.h>
 #include <REL/Relocation.h>
 #include <SKSE/SKSE.h>
+
+#include <RE/Skyrim.Flash.h>
 
 #include "RE/Offset.Ext.h"
 #include "REL/Pattern.h"
 
 #ifdef NDEBUG
-#	include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/basic_file_sink.h>
 #else
-#	include <spdlog/sinks/msvc_sink.h>
+#include <spdlog/sinks/msvc_sink.h>
 #endif
 
 #include <tsl/ordered_map.h>
