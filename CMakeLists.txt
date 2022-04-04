@@ -6,6 +6,8 @@ project(
 	LANGUAGES CXX
 )
 
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
 if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
 	message(
 		FATAL_ERROR
@@ -13,18 +15,39 @@ if(PROJECT_SOURCE_DIR STREQUAL PROJECT_BINARY_DIR)
 	)
 endif()
 
+if(CMAKE_GENERATOR MATCHES "Visual Studio")
+	option(CMAKE_VS_INCLUDE_INSTALL_TO_DEFAULT_BUILD "Include INSTALL target to default build." OFF)
+endif()
+
 get_filename_component(
 	Skyrim64Path
 	"[HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Bethesda Softworks\\Skyrim Special Edition;installed path]"
 	ABSOLUTE CACHE)
 
-option(COPY_OUTPUT "Copy the build output to the Skyrim directory." OFF)
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+	set(CMAKE_INSTALL_PREFIX "${GAME_DIR}/Data" CACHE PATH
+		"Install path prefix (e.g. Skyrim Data directory or Mod Organizer virtual directory)."
+		FORCE
+	)
+endif()
 
-list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake")
+list(APPEND CMAKE_IGNORE_PATH "${PROJECT_BINARY_DIR}")
+list(APPEND CMAKE_MODULE_PATH
+	"${PROJECT_SOURCE_DIR}/cmake"
+	"${PROJECT_SOURCE_DIR}/tools/BethesdaCMakeModules/Modules"
+)
 
+include(AddCXXFiles)
 
-include (cmake/sourcelist.cmake)
-source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${SOURCES})
+add_library("${PROJECT_NAME}" SHARED)
+
+target_compile_features(
+	"${PROJECT_NAME}"
+	PRIVATE
+		cxx_std_20
+)
+
+add_cxx_files("${PROJECT_NAME}")
 
 set(VERSION_HEADER "${CMAKE_CURRENT_BINARY_DIR}/src/Plugin.h")
 configure_file(
@@ -33,42 +56,48 @@ configure_file(
 	@ONLY
 )
 
-source_group("src" FILES "${VERSION_HEADER}")
-
 configure_file(
 	${CMAKE_CURRENT_SOURCE_DIR}/cmake/version.rc.in
 	${CMAKE_CURRENT_BINARY_DIR}/version.rc
 	@ONLY
 )
 
-add_library(
-	"${PROJECT_NAME}"
-	SHARED
-	${SOURCES}
-	"${VERSION_HEADER}"
-	${CMAKE_CURRENT_BINARY_DIR}/version.rc
-	.clang-format
-	.editorconfig
-)
-
-target_compile_features(
+target_sources(
 	"${PROJECT_NAME}"
 	PRIVATE
-		cxx_std_20
+		"${VERSION_HEADER}"
+		${CMAKE_CURRENT_BINARY_DIR}/version.rc
+		.clang-format
+		.editorconfig
+		README.md
+		vcpkg.json
+)
+
+target_precompile_headers(
+	${PROJECT_NAME}
+	PRIVATE
+		src/PCH/PCH.h
+)
+
+target_include_directories(
+	${PROJECT_NAME}
+	PRIVATE
+		${CMAKE_CURRENT_BINARY_DIR}/src
+		${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	target_compile_options(
 		"${PROJECT_NAME}"
 		PRIVATE
-			"/sdl"	# Enable Additional Security Checks
-			"/utf-8"	# Set Source and Executable character sets to UTF-8
-			"/Zi"	# Debug Information Format
+			"/sdl"              # Enable Additional Security Checks
+			"/utf-8"            # Set Source and Executable character sets to UTF-8
+			"/Zi"               # Debug Information Format
 
-			"/permissive-"	# Standards conformance
-			"/Zc:preprocessor"	# Enable preprocessor conformance mode
+			"/permissive-"      # Standards conformance
+			"/Zc:preprocessor"  # Enable preprocessor conformance mode
 
-			"/wd4200" # nonstandard extension used : zero-sized array in struct/union
+			"/wd4200"           # nonstandard extension used : zero-sized array in struct/union
 
 			"$<$<CONFIG:DEBUG>:>"
 			"$<$<CONFIG:RELEASE>:/Zc:inline;/JMC-;/Ob3>"
@@ -82,21 +111,15 @@ if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
 	)
 endif()
 
-target_include_directories(
-	${PROJECT_NAME}
-	PRIVATE
-		${CMAKE_CURRENT_BINARY_DIR}/src
-		${CMAKE_CURRENT_SOURCE_DIR}/src
-)
-
 add_compile_definitions(SKSE_SUPPORT_XBYAK)
-add_subdirectory("external/CommonLibSSE" CommonLibSSE)
-add_subdirectory("external/FlashLibSkyrim" FlashLibSkyrim)
 
-find_package(spdlog REQUIRED CONFIG)
-find_package(xbyak REQUIRED)
+add_subdirectory("external/CommonLibSSE" CommonLibSSE EXCLUDE_FROM_ALL)
+add_subdirectory("external/FlashLibSkyrim" FlashLibSkyrim EXCLUDE_FROM_ALL)
+
 find_package(jsoncpp REQUIRED)
-find_package(tsl-ordered-map REQUIRED CONFIG)
+find_package(spdlog CONFIG REQUIRED)
+find_package(tsl-ordered-map CONFIG REQUIRED)
+find_package(xbyak CONFIG REQUIRED)
 
 target_link_libraries(
 	${PROJECT_NAME}
@@ -107,18 +130,14 @@ target_link_libraries(
 		jsoncpp_static
 )
 
-target_precompile_headers(
-	${PROJECT_NAME}
-	PRIVATE
-		src/PCH/PCH.h
+install(
+	FILES
+		"$<TARGET_FILE:${PROJECT_NAME}>"
+		"dist/Data/SKSE/Plugins/${PROJECT_NAME}.ini"
+	DESTINATION "SKSE/Plugins"
 )
 
-if("${COPY_OUTPUT}")
-	add_custom_command(
-		TARGET "${PROJECT_NAME}"
-		POST_BUILD
-		COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:${PROJECT_NAME}>" "${Skyrim64Path}/Data/SKSE/Plugins/"
-		COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_PDB_FILE:${PROJECT_NAME}>" "${Skyrim64Path}/Data/SKSE/Plugins/"
-		VERBATIM
-	)
-endif()
+set(CPACK_GENERATOR "7Z")
+set(CPACK_PACKAGE_FILE_NAME ${PROJECT_NAME}-${PROJECT_VERSION})
+set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY FALSE)
+include(CPack)
