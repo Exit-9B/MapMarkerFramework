@@ -37,7 +37,7 @@ jobs:
     - name: Configure CMake
       run: cmake --preset vs2022-windows -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
       env:
-        VCPKG_ROOT: ${{ env.VCPKG_INSTALLATION_ROOT }}
+        VCPKG_ROOT: ${VCPKG_INSTALLATION_ROOT}
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
