@@ -75,6 +75,18 @@
       ],
       "name": "vs2022-windows",
       "toolset": "v143"
+    },
+    {
+      "cacheVariables": {
+        "CMAKE_TOOLCHAIN_FILE": {
+          "type": "STRING",
+          "value": "$env{VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
+        }
+      },
+      "inherits": [
+        "vs2022-windows"
+      ],
+      "name": "github-workflows"
     }
   ],
   "version": 3
