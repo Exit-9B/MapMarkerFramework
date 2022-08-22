@@ -9,6 +9,7 @@ on:
 
 env:
   BUILD_TYPE: Release
+  VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg-cache
 
 jobs:
   build:
