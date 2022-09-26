@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.20)
 
 project(
 	MapMarkerFramework
-	VERSION 2.1.4
+	VERSION 2.0.5
 	LANGUAGES CXX
 )
 
@@ -133,7 +133,6 @@ target_link_libraries(
 install(
 	FILES
 		"$<TARGET_FILE:${PROJECT_NAME}>"
-		"dist/Data/SKSE/Plugins/${PROJECT_NAME}.ini"
 	DESTINATION "SKSE/Plugins"
 )
 

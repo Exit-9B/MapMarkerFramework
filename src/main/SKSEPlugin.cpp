@@ -58,7 +58,9 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	SKSE::AllocTrampoline(42);
 	DiscoveryMusicManager::InstallHooks();
 	ImportManager::InstallHooks();
+#if 0
 	LocalMapManager::InstallHooks();
+#endif
 
 	Settings::GetSingleton()->LoadSettings();
 
@@ -68,7 +70,9 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 			switch (a_msg->type) {
 			case SKSE::MessagingInterface::kDataLoaded:
 				MapConfigLoader::GetSingleton()->LoadAll();
+#if 0
 				LocalMapManager::GetSingleton()->Load();
+#endif
 				break;
 			}
 		});
