@@ -4,3 +4,6 @@
 [submodule "external/FlashLibSkyrim"]
 	path = external/FlashLibSkyrim
 	url = https://github.com/Exit-9B/FlashLibSkyrim
+[submodule "tools/SKSE-CMakeModules"]
+	path = tools/SKSE-CMakeModules
+	url = https://github.com/Exit-9B/SKSE-CMakeModules.git
