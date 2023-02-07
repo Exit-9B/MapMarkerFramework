@@ -199,6 +199,11 @@ void ImportManager::SetupMapMenu(RE::GFxMovieView* a_movieView)
 		return;
 	}
 
+	if (static_cast<std::int32_t>(_baseIndex) > undiscovered) {
+		logger::critical("HUD and Map SWFs have incompatible marker data!"sv);
+		return;
+	}
+
 	logger::trace(
 		"Inserting icons at position {} + undiscovered offset {}"sv,
 		insertPos,
@@ -294,6 +299,11 @@ void ImportManager::RemoveFrame(
 	auto removeObject = Util::MakeRemoveObject(a_movieDataDef);
 	assert(removeObject);
 
+	if (a_frame >= static_cast<std::uint32_t>(a_marker->frameCount)) {
+		logger::critical("Tried to access frame index {} of {}"sv, a_frame, a_marker->frameCount);
+		return;
+	}
+
 	a_marker->frames[a_frame] = Util::MakeTagList(a_movieDataDef, { removeObject });
 }
 
@@ -303,6 +313,11 @@ void ImportManager::FixDoorMarker(
 	std::uint32_t a_frame)
 {
 	auto doAction = Util::MakeMarkerFrameAction(a_movieDataDef);
+
+	if (a_frame >= static_cast<std::uint32_t>(a_marker->frameCount)) {
+		logger::critical("Tried to access frame index {} of {}"sv, a_frame, a_marker->frameCount);
+		return;
+	}
 
 	a_marker->frames[a_frame] = Util::ExtendTagList(
 		a_movieDataDef,
