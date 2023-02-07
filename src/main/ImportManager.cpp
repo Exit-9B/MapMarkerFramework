@@ -199,7 +199,7 @@ void ImportManager::SetupMapMenu(RE::GFxMovieView* a_movieView)
 		return;
 	}
 
-	if (static_cast<std::int32_t>(_baseIndex) > undiscovered) {
+	if (static_cast<std::int32_t>(insertPos - 1) > undiscovered) {
 		logger::critical("HUD and Map SWFs have incompatible marker data!"sv);
 		return;
 	}
