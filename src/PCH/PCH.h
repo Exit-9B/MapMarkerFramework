@@ -6,8 +6,6 @@
 #include <REL/Relocation.h>
 #include <SKSE/SKSE.h>
 
-#include <RE/Skyrim.Flash.h>
-
 #include "RE/Offset.Ext.h"
 #include "REL/Pattern.h"
 

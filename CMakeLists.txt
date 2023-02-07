@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.24)
 
 project(
 	MapMarkerFramework
-	VERSION 2.1.4
+	VERSION 2.1.5
 	LANGUAGES CXX
 )
 
