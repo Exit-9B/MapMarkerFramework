@@ -1,9 +1,7 @@
 {
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
   "name": "mapmarkerframework",
-  "version": "2.1.4",
-  "description": "Framework for mods to add new map marker icons",
-  "homepage": "https://github.com/Exit-9B/MapMarkerFramework",
-  "license": "MIT",
+  "version": "2",
   "dependencies": [
     "boost-stl-interfaces",
     "fmt",
