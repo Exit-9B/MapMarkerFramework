@@ -102,16 +102,34 @@ auto LocalMapManager::GetSpecialMarkerType(RE::SpecialMarkerData* a_data) -> RE:
 	auto linkedDoor = teleport->teleportData->linkedDoor.get();
 	auto location = linkedDoor->GetEditorLocation();
 
+	auto cell = objectRef->GetParentCell();
+	auto linkedCell = linkedDoor->GetParentCell();
+
+	bool isInterior = cell ? cell->IsInteriorCell() : false;
+	bool linkedIsInterior = linkedCell ? linkedCell->IsInteriorCell() : false;
+	bool isEntering = !isInterior && linkedIsInterior;
+	bool isLeaving = isInterior && !linkedIsInterior;
+
 	if (location) {
 		auto localMapManager = GetSingleton();
 		auto marker = localMapManager->GetLocalMapMarker(location);
 
-		auto player = RE::PlayerCharacter::GetSingleton();
-		auto currentLoc = player ? player->currentLocation : nullptr;
-		auto currentLocMarker =
-			currentLoc ? localMapManager->GetLocalMapMarker(currentLoc) : RE::MARKER_TYPE::kDoor;
+		if (isEntering) {
+			return marker;
+		}
+		else if (isLeaving) {
+			return RE::MARKER_TYPE::kDoor;
+		}
+		else {
+			auto player = RE::PlayerCharacter::GetSingleton();
+			auto currentLoc = player ? player->currentLocation : nullptr;
 
-		return marker != currentLocMarker ? marker : RE::MARKER_TYPE::kDoor;
+			auto currentLocMarker =
+				currentLoc ? localMapManager->GetLocalMapMarker(currentLoc)
+				: RE::MARKER_TYPE::kDoor;
+
+			return marker != currentLocMarker ? marker : RE::MARKER_TYPE::kDoor;
+		}
 	}
 
 	return type;
