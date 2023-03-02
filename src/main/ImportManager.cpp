@@ -32,6 +32,16 @@ void ImportManager::HideFromHUD(RE::MARKER_TYPE a_markerType)
 	_hideFromHUD.insert(a_markerType);
 }
 
+const IconInfo* ImportManager::GetIconInfo(std::int32_t a_index) const
+{
+	if (a_index >= 0 && a_index < _customIcons.size()) {
+		return &_customIcons[a_index];
+	}
+	else {
+		return nullptr;
+	}
+}
+
 void ImportManager::InstallHooks()
 {
 	bool success = Patch::WriteLoadHUDPatch(LoadMovie_HUD, _LoadMovie_HUD);

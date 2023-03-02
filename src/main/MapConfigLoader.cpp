@@ -4,6 +4,7 @@
 #include "LocalMapManager.h"
 #include "Settings.h"
 #include "Util/FormUtil.h"
+#include "VendorManager.h"
 #include <json/json.h>
 
 auto MapConfigLoader::GetSingleton() -> MapConfigLoader*
@@ -382,4 +383,55 @@ void MapConfigLoader::UpdateMapMarker(RE::TESObjectREFR* a_markerRef, RE::MARKER
 	if (extraMapMarker) {
 		extraMapMarker->mapData->type = a_icon;
 	}
+}
+
+auto MapConfigLoader::GetMapMarker(RE::TESObjectREFR* a_refr) const -> const MapMarker&
+{
+	if (auto i = _mapMarkers.find(a_refr); i != _mapMarkers.end()) {
+		return i->second;
+	}
+
+	return NoMarker;
+}
+
+auto MapConfigLoader::GetLocalMarker(RE::BGSLocation* a_location) const -> const MapMarker&
+{
+	static auto locTypeStore = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("LocTypeStore"sv);
+
+	auto locationMarker = _locationMarkers.find(a_location);
+	if (locationMarker != _locationMarkers.end()) {
+		return locationMarker->second;
+	}
+
+	if (a_location->HasKeyword(locTypeStore)) {
+
+		auto vendorManager = VendorManager::GetSingleton();
+		auto vendorList = vendorManager->GetVendorList(a_location);
+
+		if (vendorList) {
+
+			auto vendorMarker = _vendorMarkers.find(vendorList);
+			if (vendorMarker != _vendorMarkers.end()) {
+				return vendorMarker->second;
+			}
+		}
+	}
+
+	for (auto& [locKeyword, markerType] : _locTypeMarkers) {
+
+		if (a_location->HasKeyword(locKeyword)) {
+			return markerType;
+		}
+	}
+
+	return DoorMarker;
+}
+
+std::int32_t MapConfigLoader::GetIconIndex(const std::string& a_name) const
+{
+	if (auto i = _iconNames.find(a_name); i != _iconNames.end()) {
+		return i->second;
+	}
+
+	return -1;
 }

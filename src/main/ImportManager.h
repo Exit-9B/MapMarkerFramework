@@ -24,6 +24,8 @@ public:
 
 	void HideFromHUD(RE::MARKER_TYPE a_markerType);
 
+	const IconInfo* GetIconInfo(std::int32_t a_index) const;
+
 private:
 	ImportManager() = default;
 
