@@ -1,3 +1,10 @@
+/**
+ * @file Interfaces.inl
+ *
+ * Copyright (c) Parapets
+ * SPDX-License-Identifier: MIT
+ */
+
 #pragma once
 
 #include "Interfaces.h"
