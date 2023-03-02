@@ -63,11 +63,11 @@ private:
 	RE::GFxSpriteDef* _marker;
 	MenuType _menuType;
 
-	std::unordered_map<std::string, std::vector<IconId>> _importResources;
+	std::map<std::string, std::vector<IconId>> _importResources;
 	std::size_t _numIcons;
 
-	std::unordered_map<std::string, RE::GFxMovieDefImpl*> _importedMovies;
-	std::unordered_map<std::string, std::uint32_t> _movieIndices;
+	std::map<std::string, RE::GFxMovieDefImpl*> _importedMovies;
+	std::map<std::string, std::uint32_t> _movieIndices;
 	std::vector<RE::GFxSpriteDef*> _icons[IconTypes::Total];
 	std::vector<std::uint16_t> _ids[IconTypes::Total];
 	std::vector<float> _iconScales;
