@@ -14,7 +14,6 @@ public:
 	static auto GetSingleton() -> LocalMapManager*;
 
 	static void InstallHooks();
-	void Load();
 
 	auto GetLocalMapMarker(RE::BGSLocation* a_location) -> RE::MARKER_TYPE;
 
@@ -26,7 +25,6 @@ private:
 	LocalMapManager() = default;
 
 	static RE::MARKER_TYPE GetSpecialMarkerType(RE::SpecialMarkerData* a_data);
-	RE::BGSListForm* GetVendorList(RE::BGSLocation* a_location);
 
 	std::unordered_map<RE::BGSLocation*, RE::BGSListForm*> _vendorLists;
 
