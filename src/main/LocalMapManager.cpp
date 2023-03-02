@@ -1,5 +1,6 @@
 #include "LocalMapManager.h"
 #include "Patch.h"
+#include "VendorManager.h"
 
 auto LocalMapManager::GetSingleton() -> LocalMapManager*
 {
@@ -14,27 +15,6 @@ void LocalMapManager::InstallHooks()
 	logger::info("Installed hooks for local map"sv);
 }
 
-void LocalMapManager::Load()
-{
-	const auto dataHandler = RE::TESDataHandler::GetSingleton();
-
-	if (dataHandler) {
-		auto& factions = dataHandler->GetFormArray<RE::TESFaction>();
-		for (auto& faction : factions) {
-			if (!faction || !faction->IsVendor())
-				continue;
-
-			auto vendorList = faction->vendorData.vendorSellBuyList;
-			auto vendorChest = faction->vendorData.merchantContainer;
-			auto location = vendorChest ? vendorChest->GetEditorLocation() : nullptr;
-
-			if (vendorList && location) {
-				_vendorLists[location] = vendorList;
-			}
-		}
-	}
-}
-
 auto LocalMapManager::GetLocalMapMarker(RE::BGSLocation* a_location) -> RE::MARKER_TYPE
 {
 	static auto locTypeStore = RE::TESForm::LookupByEditorID<RE::BGSKeyword>("LocTypeStore"sv);
@@ -46,7 +26,8 @@ auto LocalMapManager::GetLocalMapMarker(RE::BGSLocation* a_location) -> RE::MARK
 
 	if (a_location->HasKeyword(locTypeStore)) {
 
-		auto vendorList = GetVendorList(a_location);
+		auto vendorManager = VendorManager::GetSingleton();
+		auto vendorList = vendorManager->GetVendorList(a_location);
 
 		if (vendorList) {
 
@@ -133,10 +114,4 @@ auto LocalMapManager::GetSpecialMarkerType(RE::SpecialMarkerData* a_data) -> RE:
 	}
 
 	return type;
-}
-
-auto LocalMapManager::GetVendorList(RE::BGSLocation* a_location) -> RE::BGSListForm*
-{
-	auto it = _vendorLists.find(a_location);
-	return it != _vendorLists.end() ? it->second : nullptr;
 }

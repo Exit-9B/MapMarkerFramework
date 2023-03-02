@@ -29,8 +29,8 @@ private:
 
 	std::int32_t _lastIcon{ 0 };
 
-	std::unordered_map<std::string, std::int32_t> _iconNames;
-	std::unordered_map<std::string, std::string> _discoveryMusic;
+	std::map<std::string, std::int32_t> _iconNames;
+	std::map<std::string, std::string> _discoveryMusic;
 
 	std::unordered_map<RE::TESObjectREFR*, MapMarker> _mapMarkers;
 	std::unordered_map<RE::BGSLocation*, MapMarker> _locationMarkers;

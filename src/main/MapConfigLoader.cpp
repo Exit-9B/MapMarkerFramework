@@ -74,9 +74,7 @@ void MapConfigLoader::LoadFromFile(
 	if (iconDefinitions.isArray()) {
 		for (auto& iconDef : iconDefinitions) {
 			if (!iconDef.isObject()) {
-				logger::warn(
-					"Failed to fetch icon definitions from {}"sv,
-					a_fileName);
+				logger::warn("Failed to fetch icon definitions from {}"sv, a_fileName);
 				continue;
 			}
 
@@ -106,12 +104,8 @@ void MapConfigLoader::LoadFromFile(
 					exportNameUndiscovered = exportNames[1].asString();
 				}
 
-				importManager->AddCustomIcon(
-					path,
-					exportName,
-					exportNameUndiscovered,
-					scale,
-					hideFromHUD);
+				importManager
+					->AddCustomIcon(path, exportName, exportNameUndiscovered, scale, hideFromHUD);
 
 				_iconNames[name] = _lastIcon++;
 
@@ -148,9 +142,7 @@ void MapConfigLoader::LoadFromFile(
 			auto refID = mapMarker["refID"].asString();
 
 			if (refID.empty()) {
-				logger::warn(
-					"Map marker missing reference ID in {}"sv,
-					a_fileName);
+				logger::warn("Map marker missing reference ID in {}"sv, a_fileName);
 
 				continue;
 			}
@@ -222,8 +214,7 @@ void MapConfigLoader::LoadFromFile(
 			}
 
 			if (!location.empty()) {
-				auto locRef = skyrim_cast<RE::BGSLocation*>(
-					Util::GetFormFromIdentifier(location));
+				auto locRef = skyrim_cast<RE::BGSLocation*>(Util::GetFormFromIdentifier(location));
 
 				if (!locRef) {
 					logger::warn(

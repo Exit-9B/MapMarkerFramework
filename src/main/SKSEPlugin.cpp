@@ -3,6 +3,7 @@
 #include "LocalMapManager.h"
 #include "MapConfigLoader.h"
 #include "Settings.h"
+#include "VendorManager.h"
 
 namespace
 {
@@ -63,16 +64,16 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 	Settings::GetSingleton()->LoadSettings();
 
 	auto messaging = SKSE::GetMessagingInterface();
-	messaging->RegisterListener([](SKSE::MessagingInterface::Message* a_msg)
+	messaging->RegisterListener(
+		[](SKSE::MessagingInterface::Message* a_msg)
 		{
 			switch (a_msg->type) {
 			case SKSE::MessagingInterface::kDataLoaded:
 				MapConfigLoader::GetSingleton()->LoadAll();
-				LocalMapManager::GetSingleton()->Load();
+				VendorManager::GetSingleton()->Load();
 				break;
 			}
 		});
 
 	return true;
 }
-
