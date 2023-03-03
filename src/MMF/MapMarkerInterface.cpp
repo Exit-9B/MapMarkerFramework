@@ -58,9 +58,9 @@ namespace MMF::Impl
 		}
 
 		a_infoOut->VanillaMarker = GetVanillaMarkerType(a_refr);
-		std::memset(a_infoOut->SourcePath, '\0', 260);
-		std::memset(a_infoOut->ExportName, '\0', 260);
-		std::memset(a_infoOut->ExportNameUndiscovered, '\0', 260);
+		a_infoOut->SourcePath = nullptr;
+		a_infoOut->ExportName = nullptr;
+		a_infoOut->ExportNameUndiscovered = nullptr;
 		a_infoOut->IconScale = 1.0f;
 		a_infoOut->HideFromHUD = false;
 
@@ -88,9 +88,9 @@ namespace MMF::Impl
 		}
 
 		a_infoOut->VanillaMarker = static_cast<std::int32_t>(RE::MARKER_TYPE::kDoor);
-		std::memset(a_infoOut->SourcePath, '\0', 260);
-		std::memset(a_infoOut->ExportName, '\0', 260);
-		std::memset(a_infoOut->ExportNameUndiscovered, '\0', 260);
+		a_infoOut->SourcePath = nullptr;
+		a_infoOut->ExportName = nullptr;
+		a_infoOut->ExportNameUndiscovered = nullptr;
 		a_infoOut->IconScale = 1.0f;
 		a_infoOut->HideFromHUD = false;
 
@@ -114,13 +114,9 @@ namespace MMF::Impl
 		assert(a_infoOut);
 
 		if (a_info) {
-			::strcpy_s(a_infoOut->SourcePath, 260, a_info->SourcePath.c_str());
-			::strcpy_s(a_infoOut->ExportName, 260, a_info->ExportName.c_str());
-			::strcpy_s(
-				a_infoOut->ExportNameUndiscovered,
-				260,
-				a_info->ExportNameUndiscovered.c_str());
-
+			a_infoOut->SourcePath = a_info->SourcePath.data();
+			a_infoOut->ExportName = a_info->ExportName.data();
+			a_infoOut->ExportNameUndiscovered = a_info->ExportNameUndiscovered.data();
 			a_infoOut->IconScale = a_info->IconScale;
 			a_infoOut->HideFromHUD = a_info->HideFromHUD;
 		}

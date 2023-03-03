@@ -18,7 +18,8 @@ namespace MMF
 
 	inline bool MarkerInfo::HasExternalIcon() const
 	{
-		return ::strlen(proxy_.SourcePath) && ::strlen(proxy_.ExportName);
+		return proxy_.SourcePath && proxy_.ExportName && ::strlen(proxy_.SourcePath) &&
+			::strlen(proxy_.ExportName);
 	}
 
 	inline std::string MarkerInfo::GetSourcePath() const
@@ -58,8 +59,7 @@ namespace MMF
 		return static_cast<RE::MARKER_TYPE>(markerType);
 	}
 
-	inline std::string_view MapMarkerInterface::GetCustomMarkerName(
-		RE::TESObjectREFR* a_refr) const
+	inline std::string MapMarkerInterface::GetCustomMarkerName(RE::TESObjectREFR* a_refr) const
 	{
 		return GetProxy()->GetCustomMarkerName(a_refr);
 	}

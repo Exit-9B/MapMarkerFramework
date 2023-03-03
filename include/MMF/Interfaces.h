@@ -63,7 +63,7 @@ namespace MMF
 
 		detail::MARKER_INFO proxy_;
 	};
-	static_assert(sizeof(MarkerInfo) == 0x318);
+	static_assert(sizeof(MarkerInfo) == 0x28);
 
 	class MapMarkerInterface
 	{
@@ -90,7 +90,7 @@ namespace MMF
 		 *
 		 * @param[in] a_refr The map marker reference to query.
 		 */
-		[[nodiscard]] std::string_view GetCustomMarkerName(RE::TESObjectREFR* a_refr) const;
+		[[nodiscard]] std::string GetCustomMarkerName(RE::TESObjectREFR* a_refr) const;
 
 		/**
 		 * Get world map marker info for a map marker reference.

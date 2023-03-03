@@ -26,14 +26,14 @@ namespace MMF
 	{
 		struct MARKER_INFO
 		{
+			const char* SourcePath;
+			const char* ExportName;
+			const char* ExportNameUndiscovered;
 			std::int32_t VanillaMarker;
-			char SourcePath[260];
-			char ExportName[260];
-			char ExportNameUndiscovered[260];
 			float IconScale;
 			bool HideFromHUD;
 		};
-		static_assert(sizeof(MARKER_INFO) == 0x318);
+		static_assert(sizeof(MARKER_INFO) == 0x28);
 
 		struct MapMarkerInterface
 		{
