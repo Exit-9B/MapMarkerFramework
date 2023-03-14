@@ -1,6 +1,7 @@
 #include "DiscoveryMusicManager.h"
 #include "ImportManager.h"
 #include "LocalMapManager.h"
+#include "MMF/MapMarkerInterface.h"
 #include "MapConfigLoader.h"
 #include "Settings.h"
 #include "VendorManager.h"
@@ -71,6 +72,7 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 			case SKSE::MessagingInterface::kDataLoaded:
 				MapConfigLoader::GetSingleton()->LoadAll();
 				VendorManager::GetSingleton()->Load();
+				MMF::Impl::MapMarkerInterface::Dispatch();
 				break;
 			}
 		});

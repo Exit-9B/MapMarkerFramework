@@ -3,6 +3,10 @@
 class MapConfigLoader
 {
 public:
+	using MapMarker = std::variant<RE::MARKER_TYPE, std::string>;
+	inline static const MapMarker NoMarker = RE::MARKER_TYPE::kNone;
+	inline static const MapMarker DoorMarker = RE::MARKER_TYPE::kDoor;
+
 	~MapConfigLoader() = default;
 	MapConfigLoader(const MapConfigLoader&) = delete;
 	MapConfigLoader(MapConfigLoader&&) = delete;
@@ -14,9 +18,13 @@ public:
 	void LoadAll();
 	void UpdateMarkers(std::uint32_t a_customIconIndex) const;
 
-private:
-	using MapMarker = std::variant<RE::MARKER_TYPE, std::string>;
+	const MapMarker& GetMapMarker(RE::TESObjectREFR* a_refr) const;
 
+	const MapMarker& GetLocalMarker(RE::BGSLocation* a_location) const;
+
+	std::int32_t GetIconIndex(const std::string& a_name) const;
+
+private:
 	MapConfigLoader() = default;
 
 	void LoadFromFile(

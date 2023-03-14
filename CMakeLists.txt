@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.24)
 
 project(
 	MapMarkerFramework
-	VERSION 2.1.5
+	VERSION 2.2.0
 	LANGUAGES CXX
 )
 
@@ -19,6 +19,7 @@ set(SKSE_SUPPORT_VR OFF)
 
 SKSEPlugin_Add(
 	${PROJECT_NAME}
+	INCLUDE_DIR include
 	SOURCE_DIR src
 	SOURCES
 		.clang-format
