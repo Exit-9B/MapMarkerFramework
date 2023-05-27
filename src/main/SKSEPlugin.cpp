@@ -69,6 +69,13 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 		[](SKSE::MessagingInterface::Message* a_msg)
 		{
 			switch (a_msg->type) {
+			case SKSE::MessagingInterface::kPostLoad:
+				if (SKSE::GetMessagingInterface()->RegisterListener(
+						"InfinityUI",
+						ImportManager::GetMovieDefFromInfinityUI)) {
+					logger::info("Successfully registered for Infinity UI messages!");
+				}
+				break;
 			case SKSE::MessagingInterface::kDataLoaded:
 				MapConfigLoader::GetSingleton()->LoadAll();
 				VendorManager::GetSingleton()->Load();

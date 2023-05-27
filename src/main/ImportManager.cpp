@@ -5,6 +5,8 @@
 #include "Util/GFxUtil.h"
 #include "Util/MapMarkerUtil.h"
 
+#include "IUI/API.h"
+
 namespace chrono = std::chrono;
 
 auto ImportManager::GetSingleton() -> ImportManager*
@@ -56,11 +58,43 @@ void ImportManager::InstallHooks()
 	}
 }
 
+RE::GString GFxValueToString(const RE::GFxValue& a_val)
+{
+	using func_t = RE::GString* (RE::GFxValue::*)(RE::GString*) const;
+	REL::Relocation<func_t> func{ REL::ID(82297) };
+
+	RE::GString retVal;
+	func(&a_val, &retVal);
+	return retVal;
+}
+
+// static
+void ImportManager::GetMovieDefFromInfinityUI(SKSE::MessagingInterface::Message* a_msg)
+{
+	if (!a_msg || std::string_view(a_msg->sender) != "InfinityUI") {
+		return;
+	}
+
+	if (auto postPatchMsg = IUI::API::TranslateAs<IUI::API::PostPatchInstanceMessage>(a_msg)) {
+		std::string_view movieUrl = postPatchMsg->movie->GetMovieDef()->GetFileURL();
+
+		if (movieUrl.find("HUDMenu") == std::string::npos) {
+			return;
+		}
+
+		std::string pathToNewInstance = GFxValueToString(postPatchMsg->newInstance).c_str();
+
+		if (pathToNewInstance == "_level0.HUDMovieBaseInstance.CompassShoutMeterHolder.Compass") {
+			GetSingleton()->compassMovieDef = postPatchMsg->newInstanceMovieDef;
+		}
+	}
+}
+
 void ImportManager::SetupHUDMenu(RE::GFxMovieView* a_movieView)
 {
 	assert(a_movieView);
 
-	auto movieDef = a_movieView->GetMovieDef();
+	auto movieDef = compassMovieDef ? compassMovieDef : a_movieView->GetMovieDef();
 	auto resource = movieDef ? movieDef->GetResource("Compass Marker") : nullptr;
 
 	auto resourceType = resource
