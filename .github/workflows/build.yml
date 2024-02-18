@@ -16,7 +16,7 @@ jobs:
     runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: recursive
 
@@ -28,7 +28,7 @@ jobs:
         ./vcpkg --version > ${{ github.workspace }}/vcpkg-version.txt
 
     - name: Cache vcpkg
-      uses: actions/cache@v2
+      uses: actions/cache@v4
       id: vcpkg-cache
       env:
         cache-name: vcpkg-cache
@@ -43,8 +43,7 @@ jobs:
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
 
     - name: Upload Artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: MapMarkerFramework
         path: ${{ github.workspace }}/build/${{ env.BUILD_TYPE }}/MapMarkerFramework.dll
-      
