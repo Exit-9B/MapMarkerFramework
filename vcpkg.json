@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg/master/scripts/vcpkg.schema.json",
+  "$schema": "https://raw.githubusercontent.com/microsoft/vcpkg-tool/main/docs/vcpkg.schema.json",
   "name": "mapmarkerframework",
   "version": "2",
   "dependencies": [
@@ -11,5 +11,12 @@
     "jsoncpp",
     "simpleini",
     "tsl-ordered-map"
+  ],
+  "builtin-baseline": "000d1bda1ffa95a73e0b40334fa4103d6f4d3d48",
+  "overrides": [
+    {
+      "name": "xbyak",
+      "version": "6.69"
+    }
   ]
 }
