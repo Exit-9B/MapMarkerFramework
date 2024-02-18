@@ -37,7 +37,7 @@ jobs:
         key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('main/**/vcpkg.json', 'vcpkg-version.txt') }}
 
     - name: Configure CMake
-      run: cmake --preset github-workflows
+      run: cmake --preset github-workflows -Wno-deprecated
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
