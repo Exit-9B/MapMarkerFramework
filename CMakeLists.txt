@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.24)
 
 project(
 	MapMarkerFramework
-	VERSION 2.2.0
+	VERSION 2.2.1
 	LANGUAGES CXX
 )
 
@@ -30,15 +30,12 @@ SKSEPlugin_Add(
 		src/PCH/PCH.h
 )
 
-add_subdirectory("external/FlashLibSkyrim" FlashLibSkyrim EXCLUDE_FROM_ALL)
-
 find_package(jsoncpp REQUIRED)
 find_package(tsl-ordered-map CONFIG REQUIRED)
 
 target_link_libraries(
 	${PROJECT_NAME}
 	PRIVATE
-		FlashLibSkyrim
 		jsoncpp_static
 		tsl::ordered_map
 )

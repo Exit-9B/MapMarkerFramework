@@ -47,7 +47,7 @@ bool Patch::WriteLoadHUDPatch(LoadMovieFunc* a_newCall, REL::Relocation<LoadMovi
 	// SkyrimSE 1.6.342.0: 0x8AD230+FF
 	auto hud_hook_alt = REL::Relocation<std::uintptr_t>{ Offset::HUDMenu::Ctor, 0xFF };
 
-	constexpr auto relcall = REL::Pattern<"E8 ?? ?? ?? ??">{};
+	constexpr auto relcall = REL::make_pattern<"E8">();
 
 	if (relcall.match(hud_hook.address())) {
 		logger::trace("Using normal address for HUD hook"sv);
@@ -71,7 +71,7 @@ bool Patch::WriteLoadMapPatch(LoadMovieFunc* a_newCall, REL::Relocation<LoadMovi
 
 	auto map_hook = REL::Relocation<std::uintptr_t>{ Offset::MapMenu::Ctor, 0x1D1 };
 
-	constexpr auto relcall = REL::Pattern<"E8 ?? ?? ?? ??">{};
+	constexpr auto relcall = REL::make_pattern<"E8">();
 
 	if (relcall.match(map_hook.address())) {
 		a_origCall = trampoline.write_call<5>(map_hook.address(), a_newCall);
@@ -91,7 +91,7 @@ bool Patch::WriteLocalMapPatch(
 
 	auto door_hook = REL::Relocation<std::uintptr_t>{ Offset::LocalMapMenu::PopulateData, 0x941 };
 
-	constexpr auto relcall = REL::Pattern<"E8 ?? ?? ?? ??">{};
+	constexpr auto relcall = REL::make_pattern<"E8">();
 
 	if (relcall.match(door_hook.address())) {
 		a_origCall = trampoline.write_call<5>(door_hook.address(), a_newCall);
