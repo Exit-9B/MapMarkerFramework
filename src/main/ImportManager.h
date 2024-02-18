@@ -26,6 +26,8 @@ public:
 
 	const IconInfo* GetIconInfo(std::int32_t a_index) const;
 
+	static void GetMovieDefFromInfinityUI(SKSE::MessagingInterface::Message* a_msg);
+
 private:
 	ImportManager() = default;
 
@@ -63,6 +65,8 @@ private:
 	std::uint32_t _baseIndex = 0;
 
 	std::unordered_set<RE::MARKER_TYPE> _hideFromHUD;
+
+	RE::GFxMovieDef* compassMovieDef = nullptr;
 
 	inline static REL::Relocation<decltype(LoadMovie_HUD)> _LoadMovie_HUD;
 	inline static REL::Relocation<decltype(LoadMovie_Map)> _LoadMovie_Map;
