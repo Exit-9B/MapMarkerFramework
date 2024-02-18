@@ -7,7 +7,6 @@
 #include <SKSE/SKSE.h>
 
 #include "RE/Offset.Ext.h"
-#include "REL/Pattern.h"
 
 #ifdef NDEBUG
 #include <spdlog/sinks/basic_file_sink.h>
